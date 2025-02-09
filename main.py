@@ -23,7 +23,7 @@ def init_db():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(''''
-            CREATE TABLE IF NOT EXIST blog_post (
+            CREATE TABLE IF NOT EXISTS blog_post (
                 id INTEGER PRIMARY KEY,
                 title TEXT NOT NULL UNIQUE,
                 subtitle TEXT NOT NULL,
@@ -56,7 +56,7 @@ def show_post(post_id):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
-        print(post)
+
     if post:
         post_data = {
             "id": post[0],
@@ -85,11 +85,47 @@ class CreatePostForm(FlaskForm):
 @app.route("/new-post", methods=["GET", "POST"])
 def add_new_post():
     form = CreatePostForm()
+    if form.validate_on_submit():
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO blog_post (title, subtitle, date, body, author, img_url)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (form.title.data,
+                  form.subtitle.data,
+                  date.today().strftime("%B %d, %Y"),
+                  form.body.data,
+                  form.author.data,
+                  form.img_url.data))
+            conn.commit()
+
+        return redirect(url_for("get_all_posts"))
 
     return render_template("make-post.html", form=form)
 
 
-# TODO: edit_post() to change an existing blog post
+ # edit_post() to change an existing blog post
+@app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+def edit_post(post_id):
+    form = CreatePostForm()
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
+
+    if post:
+        post_data = {
+            "id": post[0],
+            "title": post[1],
+            "subtitle": post[2],
+            "date": post[3],
+            "body": post[4],
+            "author": post[5],
+            "img_url": post[6],
+        }
+
+        return render_template("make-post.html", form=form, is_edit=True)
+
 
 # TODO: delete_post() to remove a blog post from the database
 
@@ -105,4 +141,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    app.run(debug=True, port=5003) 
