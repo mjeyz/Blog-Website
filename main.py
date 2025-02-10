@@ -140,11 +140,25 @@ def edit_post(post_id):
     return render_template("make-post.html", form=form)
 
 
+@app.route("/delete/<int:post_id>", methods=["POST"])
+def delete_post(post_id):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
 
+        # Fetch post to ensure it exists
+        post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
 
-# TODO: delete_post() to remove a blog post from the database
+        if post is None:
+            flash("Post not found.", "error")
+            return redirect(url_for("get_all_posts"))
 
-# Below is the code from previous lessons. No changes needed.
+        # Delete the post
+        cursor.execute("DELETE FROM blog_post WHERE id = ?", (post_id,))
+        conn.commit()
+
+        flash("Post deleted successfully!", "success")
+        return redirect(url_for("get_all_posts"))
+
 @app.route("/about")
 def about():
     return render_template("about.html")
