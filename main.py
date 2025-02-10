@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
@@ -72,6 +72,7 @@ def show_post(post_id):
 
     return render_template("post.html", post=post_data)
 
+
 class CreatePostForm(FlaskForm):
     title = StringField("Blog Post Title", validators=[DataRequired()])
     subtitle = StringField("Subtitle", validators=[DataRequired()])
@@ -104,27 +105,41 @@ def add_new_post():
     return render_template("make-post.html", form=form)
 
 
- # edit_post() to change an existing blog post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
     form = CreatePostForm()
 
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
+
         post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
+        if post is None:
+            return "Post not found", 404
 
-    if post:
-        post_data = {
-            "id": post[0],
-            "title": post[1],
-            "subtitle": post[2],
-            "date": post[3],
-            "body": post[4],
-            "author": post[5],
-            "img_url": post[6],
-        }
+        if request.method == "POST" and form.validate_on_submit():
+            cursor.execute(
+                """
+                UPDATE blog_post
+                SET title = ?, body = ?, author = ?, img_url = ?, subtitle = ?
+                WHERE id = ?
+                """,
+                (form.title.data, form.body.data, form.author.data, form.img_url.data, form.subtitle.data, post_id)
+            )
 
-        return render_template("make-post.html", form=form, is_edit=True)
+            conn.commit()
+
+            flash("Post updated successfully!", "success")
+            return redirect(url_for("show_post", post_id=post_id))
+
+        form.title.data = post[1]
+        form.body.data = post[3]
+        form.author.data = post[4]
+        form.img_url.data = post[5]
+        form.subtitle.data = post[6]
+
+    return render_template("make-post.html", form=form)
+
+
 
 
 # TODO: delete_post() to remove a blog post from the database
@@ -141,4 +156,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003) 
+    app.run(debug=True, port=5003)
