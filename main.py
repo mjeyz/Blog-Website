@@ -13,6 +13,8 @@ app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
+# TODO: Configure Flask-Login
+
 # CREATE DATABASE
 DB_PATH = "instance/posts.db"
 
@@ -39,6 +41,24 @@ def init_db():
 
 init_db()
 
+# TODO: Create a User table for all your registered users.
+
+# TODO: Use Werkzeug to hash the user's password when creating a new user.
+@app.route('/register')
+def register():
+    return render_template("register.html")
+
+
+# TODO: Retrieve a user from the database based on their email.
+@app.route('/login')
+def login():
+    return render_template("login.html")
+
+
+@app.route('/logout')
+def logout():
+    return redirect(url_for('get_all_posts'))
+
 
 @app.route('/')
 def get_all_posts():
@@ -50,7 +70,7 @@ def get_all_posts():
     posts = [blog for blog in blog_post]
     return render_template("index.html", all_posts=posts)
 
-
+# TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>")
 def show_post(post_id):
     with sqlite3.connect(DB_PATH) as conn:
@@ -82,7 +102,7 @@ class CreatePostForm(FlaskForm):
     submit = SubmitField("Submit Post")
 
 
-# add_new_post() to create a new blog post
+# TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 def add_new_post():
     form = CreatePostForm()
@@ -104,7 +124,7 @@ def add_new_post():
 
     return render_template("make-post.html", form=form)
 
-
+# TODO: Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
     form = CreatePostForm()
@@ -139,7 +159,7 @@ def edit_post(post_id):
 
     return render_template("make-post.html", form=form)
 
-
+# TODO: Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>", methods=["POST"])
 def delete_post(post_id):
     with sqlite3.connect(DB_PATH) as conn:
