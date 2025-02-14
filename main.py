@@ -7,6 +7,7 @@ from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditor, CKEditorField
 from datetime import date
 import sqlite3
+from forms import CreatePostForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -15,7 +16,7 @@ ckeditor = CKEditor(app)
 
 # TODO: Configure Flask-Login
 
-# CREATE DATABASE
+# DATABASE PATH
 DB_PATH = "instance/posts.db"
 
 
@@ -93,15 +94,6 @@ def show_post(post_id):
     return render_template("post.html", post=post_data)
 
 
-class CreatePostForm(FlaskForm):
-    title = StringField("Blog Post Title", validators=[DataRequired()])
-    subtitle = StringField("Subtitle", validators=[DataRequired()])
-    author = StringField("Your Name", validators=[DataRequired()])
-    img_url = StringField("Blog Image URL", validators=[DataRequired()])
-    body = CKEditorField("Blog Content", validators=[DataRequired()])
-    submit = SubmitField("Submit Post")
-
-
 # TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 def add_new_post():
@@ -157,7 +149,7 @@ def edit_post(post_id):
         form.img_url.data = post[5]
         form.subtitle.data = post[6]
 
-    return render_template("make-post.html", form=form)
+    return render_template("make-post.html", form=form, is_edit=True)
 
 # TODO: Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>", methods=["POST"])
