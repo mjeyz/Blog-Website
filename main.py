@@ -7,7 +7,8 @@ from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditor, CKEditorField
 from datetime import date
 import sqlite3
-from forms import CreatePostForm
+from forms import CreatePostForm, RegisterForm, LoginForm
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -42,18 +43,54 @@ def init_db():
 
 init_db()
 
-# TODO: Create a User table for all your registered users.
+# : Create a User table for all your registered users.
+def user_table():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                name TEXT NOT NULL
+                )
+            """)
+        conn.commit()
+        conn.close()
+    except sqlite3.SQLITE_ERROR as e:
+        print(f"❌ SQLITE Error {e}")
 
-# TODO: Use Werkzeug to hash the user's password when creating a new user.
-@app.route('/register')
+user_table()
+
+# : Use Werkzeug to hash the user's password when creating a new user.
+@app.route('/register', methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    form = RegisterForm()
+
+    if request.method == "POST" and form.validate_on_submit():
+        email = request.form.get("email")
+        password = request.form.get("password")
+        name = request.form.get("name")
+
+        hashed_password = generate_password_hash(password=password,
+                                                 method="pbkdf2:sha256",
+                                                 salt_length=8
+                                                 )
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO user (email, name, password) VALUES (?, ?, ?)",
+                           (email, hashed_password, name))
+
+        return redirect(url_for("get_all_posts"))
+    return render_template("register.html", form=form)
 
 
 # TODO: Retrieve a user from the database based on their email.
 @app.route('/login')
 def login():
-    return render_template("login.html")
+    form = LoginForm()
+    return render_template("login.html", form=form)
 
 
 @app.route('/logout')
