@@ -24,12 +24,14 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+
 class User(UserMixin):
     def __init__(self, id, email, password, name):
         self.id = id
         self.email = email
         self.password = password
         self.name = name
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -40,7 +42,6 @@ def load_user(user_id):
         if user:
             return User(id=user[0], email=user[1], name=user[2], password=user[3])
     return None
-
 
 
 def init_db():
@@ -57,6 +58,7 @@ def init_db():
                 body TEXT NOT NULL,
                 author TEXT NOT NULL,
                 img_url TEXT NOT NULL,
+                 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
                 )
             ''')
         conn.commit()
@@ -64,6 +66,7 @@ def init_db():
 
 
 init_db()
+
 
 # : Create a User table for all your registered users.
 def user_table():
@@ -83,7 +86,9 @@ def user_table():
     except sqlite3.SQLITE_ERROR as e:
         print(f"❌ SQLITE Error {e}")
 
+
 user_table()
+
 
 # : Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
@@ -117,7 +122,6 @@ def register():
             return redirect(url_for("get_all_posts"))
 
     return render_template("register.html", form=form, current_user=current_user)
-
 
 
 # : Retrieve a user from the database based on their email.
@@ -165,6 +169,7 @@ def get_all_posts():
     posts = [blog for blog in blog_post]
     return render_template("index.html", all_posts=posts, current_user=current_user)
 
+
 # TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>")
 def show_post(post_id):
@@ -188,7 +193,7 @@ def show_post(post_id):
     return render_template("post.html", post=post_data, current_user=current_user)
 
 
-# TODO: Use a decorator so only an admin user can create a new post
+# : Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 def add_new_post():
@@ -210,6 +215,7 @@ def add_new_post():
         return redirect(url_for("get_all_posts"))
 
     return render_template("make-post.html", form=form, current_user=current_user)
+
 
 # : Use a decorator so only an admin user can edit a post
 
@@ -248,8 +254,8 @@ def edit_post(post_id):
 
     return render_template("make-post.html", form=form, is_edit=True, current_user=current_user)
 
-# : Use a decorator so only an admin user can delete a post
 
+# : Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>", methods=["POST"])
 @login_required
 def delete_post(post_id):
@@ -269,6 +275,7 @@ def delete_post(post_id):
 
         flash("Post deleted successfully!", "success")
         return redirect(url_for("get_all_posts"))
+
 
 @app.route("/about")
 def about():
