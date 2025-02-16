@@ -9,16 +9,38 @@ from datetime import date
 import sqlite3
 from forms import CreatePostForm, RegisterForm, LoginForm
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
-# TODO: Configure Flask-Login
-
 # DATABASE PATH
 DB_PATH = "instance/posts.db"
+
+# : Configure Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+class User(UserMixin):
+    def __init__(self, id, email, password, name):
+        self.id = id
+        self.email = email
+        self.password = password
+        self.name = name
+
+@login_manager.user_loader
+def load_user(user_id):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, email, name, password FROM user WHERE id = ?", (user_id,))
+        user = cursor.fetchone()
+        if user:
+            return User(id=user[0], email=user[1], name=user[2], password=user[3])
+    return None
+
 
 
 def init_db():
@@ -67,34 +89,69 @@ user_table()
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        name = form.name.data
 
-    if request.method == "POST" and form.validate_on_submit():
-        email = request.form.get("email")
-        password = request.form.get("password")
-        name = request.form.get("name")
-
-        hashed_password = generate_password_hash(password=password,
-                                                 method="pbkdf2:sha256",
-                                                 salt_length=8
-                                                 )
+        hashed_password = generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO user (email, name, password) VALUES (?, ?, ?)",
+            cursor.execute("SELECT id FROM user WHERE email = ?", (email,))
+            existing_user = cursor.fetchone()
+
+            if existing_user:
+                flash("You are already registered, please login instead", "danger")
+                return redirect(url_for("login"))
+
+            cursor.execute("INSERT INTO user (email, password, name) VALUES (?, ?, ?)",
                            (email, hashed_password, name))
+            conn.commit()
 
-        return redirect(url_for("get_all_posts"))
-    return render_template("register.html", form=form)
+            cursor.execute("SELECT id FROM user WHERE email = ?", (email,))
+            user_id = cursor.fetchone()[0]
+            user = User(id=user_id, email=email, password=hashed_password, name=name)
+
+            login_user(user)
+            flash("Registration successful! Welcome.", "success")
+            return redirect(url_for("get_all_posts"))
+
+    return render_template("register.html", form=form, current_user=current_user)
 
 
-# TODO: Retrieve a user from the database based on their email.
-@app.route('/login')
+
+# : Retrieve a user from the database based on their email.
+@app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
-    return render_template("login.html", form=form)
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM user WHERE email = ?", (email,))
+            user = cursor.fetchone()
+
+            if not user:
+                flash("That email does not exist, please register first", category="danger")
+                return redirect(url_for("register"))
+
+            stored_password = user[2]
+            if not check_password_hash(stored_password, password):
+                flash("Incorrect password, please try again", category="danger")
+                return redirect(url_for("login"))
+
+            user_obj = User(id=user[0], email=user[1], password=user[2], name=user[3])
+            login_user(user_obj)
+            return redirect(url_for("get_all_posts"))
+
+    return render_template("login.html", form=form, current_user=current_user)
 
 
 @app.route('/logout')
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 
@@ -106,7 +163,7 @@ def get_all_posts():
         blog_post = cursor.fetchall()
 
     posts = [blog for blog in blog_post]
-    return render_template("index.html", all_posts=posts)
+    return render_template("index.html", all_posts=posts, current_user=current_user)
 
 # TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>")
@@ -128,11 +185,12 @@ def show_post(post_id):
     else:
         return "Post not found", 404
 
-    return render_template("post.html", post=post_data)
+    return render_template("post.html", post=post_data, current_user=current_user)
 
 
 # TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
+@login_required
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
@@ -151,10 +209,12 @@ def add_new_post():
 
         return redirect(url_for("get_all_posts"))
 
-    return render_template("make-post.html", form=form)
+    return render_template("make-post.html", form=form, current_user=current_user)
 
-# TODO: Use a decorator so only an admin user can edit a post
+# : Use a decorator so only an admin user can edit a post
+
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+@login_required
 def edit_post(post_id):
     form = CreatePostForm()
 
@@ -186,10 +246,12 @@ def edit_post(post_id):
         form.img_url.data = post[5]
         form.subtitle.data = post[6]
 
-    return render_template("make-post.html", form=form, is_edit=True)
+    return render_template("make-post.html", form=form, is_edit=True, current_user=current_user)
 
-# TODO: Use a decorator so only an admin user can delete a post
+# : Use a decorator so only an admin user can delete a post
+
 @app.route("/delete/<int:post_id>", methods=["POST"])
+@login_required
 def delete_post(post_id):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
@@ -210,12 +272,12 @@ def delete_post(post_id):
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    return render_template("about.html", current_user=current_user)
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html")
+    return render_template("contact.html", current_user=current_user)
 
 
 if __name__ == "__main__":
