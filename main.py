@@ -12,7 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
@@ -184,7 +184,7 @@ def show_post(post_id):
 
 
 
-# TODO: Use a decorator so only an admin user can create a new post
+# : Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 def add_new_post():
@@ -240,10 +240,10 @@ def edit_post(post_id):
             return redirect(url_for("show_post", post_id=post_id))
 
         form.title.data = post[1]
-        form.body.data = post[3]
-        form.author.data = post[4]
-        form.img_url.data = post[5]
-        form.subtitle.data = post[6]
+        form.body.data = post[4]
+        form.author.data = post[5]
+        form.img_url.data = post[6]
+        form.subtitle.data = post[2]
 
     return render_template("make-post.html", form=form, is_edit=True, current_user=current_user)
 
@@ -280,4 +280,4 @@ def contact():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5003)
+    app.run(debug=False, port=5003)
