@@ -24,14 +24,12 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-
 class User(UserMixin):
     def __init__(self, id, email, password, name):
         self.id = id
         self.email = email
         self.password = password
         self.name = name
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -44,50 +42,35 @@ def load_user(user_id):
     return None
 
 
+
 def init_db():
     if not os.path.exists(DB_PATH):
         os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        conn = sqlite3.connect(DB_PATH)
+    with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(''''
-            CREATE TABLE IF NOT EXISTS blog_post (
-                id INTEGER PRIMARY KEY,
-                title TEXT NOT NULL UNIQUE,
-                subtitle TEXT NOT NULL,
-                date TEXT NOT NULL,
-                body TEXT NOT NULL,
-                author TEXT NOT NULL,
-                img_url TEXT NOT NULL,
-                 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
-                )
-            ''')
-        conn.commit()
-        conn.close()
-
-
-init_db()
-
-
-# : Create a User table for all your registered users.
-def user_table():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS user (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
                 name TEXT NOT NULL
-                )
-            """)
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS blog_post (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL UNIQUE,
+                subtitle TEXT NOT NULL,
+                date TEXT NOT NULL,
+                body TEXT NOT NULL,
+                img_url TEXT NOT NULL,
+                author_id INTEGER NOT NULL,
+                FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE
+            )
+        ''')
         conn.commit()
-        conn.close()
-    except sqlite3.SQLITE_ERROR as e:
-        print(f"❌ SQLITE Error {e}")
 
-
-user_table()
+init_db()
 
 
 # : Use Werkzeug to hash the user's password when creating a new user.
@@ -122,6 +105,7 @@ def register():
             return redirect(url_for("get_all_posts"))
 
     return render_template("register.html", form=form, current_user=current_user)
+
 
 
 # : Retrieve a user from the database based on their email.
@@ -169,13 +153,18 @@ def get_all_posts():
     posts = [blog for blog in blog_post]
     return render_template("index.html", all_posts=posts, current_user=current_user)
 
-
 # TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>")
 def show_post(post_id):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
+        post = cursor.execute('''
+            SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
+                   blog_post.body, blog_post.img_url, user.name 
+            FROM blog_post 
+            JOIN user ON blog_post.author_id = user.id 
+            WHERE blog_post.id = ?
+        ''', (post_id,)).fetchone()
 
     if post:
         post_data = {
@@ -184,8 +173,8 @@ def show_post(post_id):
             "subtitle": post[2],
             "date": post[3],
             "body": post[4],
-            "author": post[5],
-            "img_url": post[6],
+            "img_url": post[5],
+            "author": post[6],  # Correctly fetching the author's name
         }
     else:
         return "Post not found", 404
@@ -193,7 +182,9 @@ def show_post(post_id):
     return render_template("post.html", post=post_data, current_user=current_user)
 
 
-# : Use a decorator so only an admin user can create a new post
+
+
+# TODO: Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 def add_new_post():
@@ -202,14 +193,16 @@ def add_new_post():
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO blog_post (title, subtitle, date, body, author, img_url)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO blog_post (title, subtitle, date, body, author, img_url, author_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (form.title.data,
                   form.subtitle.data,
                   date.today().strftime("%B %d, %Y"),
                   form.body.data,
                   form.author.data,
-                  form.img_url.data))
+                  form.img_url.data,
+                  current_user.id))  # Add the author_id here
+
             conn.commit()
 
         return redirect(url_for("get_all_posts"))
@@ -254,8 +247,8 @@ def edit_post(post_id):
 
     return render_template("make-post.html", form=form, is_edit=True, current_user=current_user)
 
-
 # : Use a decorator so only an admin user can delete a post
+
 @app.route("/delete/<int:post_id>", methods=["POST"])
 @login_required
 def delete_post(post_id):
@@ -275,7 +268,6 @@ def delete_post(post_id):
 
         flash("Post deleted successfully!", "success")
         return redirect(url_for("get_all_posts"))
-
 
 @app.route("/about")
 def about():
