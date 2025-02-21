@@ -7,7 +7,11 @@
             content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <meta name="description" content=""/>
     <meta name="author" content=""/>
-    <title>Angela's Blog</title>
+    {% if current_user.name: %}
+    <title>{{ current_user.name }}</title>
+    {% else: %}
+    <title>Blog Theme</title>
+    {% endif %}
     {% block styles %}
     <!-- Load Bootstrap-Flask CSS here -->
     {{ bootstrap.load_css() }}

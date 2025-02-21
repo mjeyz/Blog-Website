@@ -12,7 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
+app.config['SECRET_KEY'] = "1234567890abcd"
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
