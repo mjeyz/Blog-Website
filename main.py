@@ -1,10 +1,7 @@
 import os
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_bootstrap import Bootstrap5
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, URL
-from flask_ckeditor import CKEditor, CKEditorField
+from flask_ckeditor import CKEditor
 from datetime import date
 import sqlite3
 from forms import CreatePostForm, RegisterForm, LoginForm
@@ -25,20 +22,21 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 class User(UserMixin):
-    def __init__(self, id, email, password, name):
+    def __init__(self, id, email, password, first_name, last_name):
         self.id = id
         self.email = email
         self.password = password
-        self.name = name
+        self.first_name = first_name
+        self.last_name = last_name
 
 @login_manager.user_loader
 def load_user(user_id):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, email, name, password FROM user WHERE id = ?", (user_id,))
+        cursor.execute("SELECT * , password FROM user WHERE id = ?", (user_id,))
         user = cursor.fetchone()
         if user:
-            return User(id=user[0], email=user[1], name=user[2], password=user[3])
+            return User(id=user[0], email=user[1], first_name=user[3], last_name=user[4], password=user[2])
     return None
 
 
@@ -53,7 +51,8 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
-                name TEXT NOT NULL
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL
             )
         ''')
         cursor.execute('''
@@ -80,7 +79,8 @@ def register():
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
-        name = form.name.data
+        first_name = form.first_name.data
+        last_name = form.last_name.data
 
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
         with sqlite3.connect(DB_PATH) as conn:
@@ -92,13 +92,13 @@ def register():
                 flash("You are already registered, please login instead", "danger")
                 return redirect(url_for("login"))
 
-            cursor.execute("INSERT INTO user (email, password, name) VALUES (?, ?, ?)",
-                           (email, hashed_password, name))
+            cursor.execute("INSERT INTO user (email, password, first_name, last_name) VALUES (?, ?, ?, ?)",
+                           (email, hashed_password, first_name, last_name))
             conn.commit()
 
             cursor.execute("SELECT id FROM user WHERE email = ?", (email,))
             user_id = cursor.fetchone()[0]
-            user = User(id=user_id, email=email, password=hashed_password, name=name)
+            user = User(id=user_id, email=email, password=hashed_password, first_name=first_name, last_name=last_name)
 
             login_user(user)
             flash("Registration successful! Welcome.", "success")
@@ -130,7 +130,7 @@ def login():
                 flash("Incorrect password, please try again", category="danger")
                 return redirect(url_for("login"))
 
-            user_obj = User(id=user[0], email=user[1], password=user[2], name=user[3])
+            user_obj = User(id=user[0], email=user[1], password=user[2], first_name=user[3], last_name=user[4])
             login_user(user_obj)
             return redirect(url_for("get_all_posts"))
 
@@ -160,7 +160,8 @@ def show_post(post_id):
         cursor = conn.cursor()
         post = cursor.execute('''
             SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
-                   blog_post.body, blog_post.img_url, user.name 
+                   blog_post.body, blog_post.img_url, 
+                   user.first_name || ' ' || user.last_name AS author
             FROM blog_post 
             JOIN user ON blog_post.author_id = user.id 
             WHERE blog_post.id = ?
@@ -174,12 +175,13 @@ def show_post(post_id):
             "date": post[3],
             "body": post[4],
             "img_url": post[5],
-            "author": post[6],  # Correctly fetching the author's name
+            "author": post[6],  # Now correctly fetching the full author name
         }
     else:
         return "Post not found", 404
 
     return render_template("post.html", post=post_data, current_user=current_user)
+
 
 
 
