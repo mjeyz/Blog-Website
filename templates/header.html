@@ -7,8 +7,8 @@
             content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <meta name="description" content=""/>
     <meta name="author" content=""/>
-    {% if current_user.name: %}
-    <title>{{ current_user.name }}</title>
+    {% if current_user.first_name: %}
+    <title>{{ current_user.first_name }}</title>
     {% else: %}
     <title>Blog Theme</title>
     {% endif %}
@@ -61,7 +61,7 @@
                             class="nav-link px-lg-3 py-3 py-lg-4"
                             href="{{ url_for('get_all_posts') }}">Home</a>
                 </li>
-                <!-- TODO: Only show Login/Register if user is logged out. Otherwise show "Log Out" -->
+                <!-- : Only show Login/Register if user is logged out. Otherwise, show "Log Out" -->
                 {% if not current_user.is_authenticated: %}
                 <li class="nav-item">
                     <a
