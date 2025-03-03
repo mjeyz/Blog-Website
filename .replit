@@ -6,3 +6,12 @@ channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
+
+[[ports]]
+localPort = 5003
+externalPort = 80
+exposeLocalhost = true
+
+[auth]
+pageEnabled = false
+buttonEnabled = false
