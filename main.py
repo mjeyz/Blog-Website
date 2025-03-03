@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask_bootstrap import Bootstrap as Bootstrap5
+from flask_bootstrap import Bootstrap4 as Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date
 import sqlite3
