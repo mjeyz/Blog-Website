@@ -7,9 +7,13 @@ import sqlite3
 from forms import CreatePostForm, RegisterForm, LoginForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
+from dotenv import load_dotenv
+import smtplib
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "1234567890abcd"
+app.config['SECRET_KEY'] = os.getenv("FLASK_KEY")
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
@@ -276,8 +280,35 @@ def about():
     return render_template("about.html", current_user=current_user)
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
+        message = request.form.get("message")
+
+        try:
+            connection = smtplib.SMTP("smtp.gmail.com")
+            connection.starttls()
+            connection.login(user=os.getenv("EMAIL"), password=os.getenv("PASSWORD"))
+            connection.sendmail(from_addr=email,
+                                    to_addrs=os.getenv("EMAIL"),
+                                    msg=f"subject:User Alert\n\n"
+                                        f"Name: {name}\n"
+                                        f"Email: {email}\n"
+                                        f"Phone: {phone}\n"
+                                        f"Message: {message}\n"
+                                        f"Now it's time to contect him")
+        except smtplib.SMTPException as e:
+            print(f"Smtp Error: {e}")
+        else:
+            print("Successfully Sent your message")
+            flash("Message Sent Successfully", "success")
+        finally:
+            connection.close()
+
+
     return render_template("contact.html", current_user=current_user)
 
 
