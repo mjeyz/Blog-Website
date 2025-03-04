@@ -9,6 +9,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
 import smtplib
+import twilio
 
 load_dotenv()
 
