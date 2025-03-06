@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory
 from flask_bootstrap import Bootstrap4 as Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -279,6 +279,10 @@ def delete_post(post_id):
 @app.route("/about")
 def about():
     return render_template("about.html", current_user=current_user)
+
+@app.route("/download", methods=["GET", "POST"])
+def download():
+    return send_from_directory("static", path="files/MudasirAbbas.pdf", as_attachment=True)
 
 
 @app.route("/contact", methods=["GET", "POST"])
