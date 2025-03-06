@@ -1,15 +1,16 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory
+from functools import wraps
+from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
 from flask_bootstrap import Bootstrap4 as Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date
 import sqlite3
-from forms import CreatePostForm, RegisterForm, LoginForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
 import smtplib
-import twilio
+
 
 load_dotenv()
 
@@ -67,15 +68,36 @@ def init_db():
                 subtitle TEXT NOT NULL,
                 date TEXT NOT NULL,
                 body TEXT NOT NULL,
+                author TEXT NOT NULL,
                 img_url TEXT NOT NULL,
                 author_id INTEGER NOT NULL,
                 FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS comment (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            text TEXT NOT NULL,
+            author_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            FOREIGN KEY (author_id) REFERENCES user (id) ON DELETE CASCADE,
+            FOREIGN KEY (post_id) REFERENCES blog_posts (id) ON DELETE CASCADE
+            )
+            ''')
         conn.commit()
 
 init_db()
 
+# Create an admin-only decorator
+def admin_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Ensure user is logged in before checking ID
+        if not current_user.is_authenticated or current_user.id != 1:
+            return abort(403)  # Forbidden access
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 # : Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
@@ -159,10 +181,29 @@ def get_all_posts():
     return render_template("index.html", all_posts=posts, current_user=current_user)
 
 # TODO: Allow logged-in users to comment on posts
-@app.route("/post/<int:post_id>")
+@app.route("/post/<int:post_id>", methods=["GET", "POST"])
+@login_required
 def show_post(post_id):
+    form = CommentForm()
+
+    # Ensure only logged-in users can submit comments
+    if form.validate_on_submit():
+        if not current_user.is_authenticated:  # Check if the user is logged in
+            flash("You must be logged in to comment.", "warning")
+            return redirect(url_for("login"))  # Redirect to login page
+        
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO comments (text, author_id, post_id) VALUES (?, ?, ?)",
+                           (form.text.data, current_user.id, post_id))
+            conn.commit()
+        flash("Comment added successfully!", "success")
+        return redirect(url_for("show_post", post_id=post_id))
+
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
+        
+        # Fetch the blog post details, using first_name and last_name instead of name
         post = cursor.execute('''
             SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
                    blog_post.body, blog_post.img_url, 
@@ -172,7 +213,9 @@ def show_post(post_id):
             WHERE blog_post.id = ?
         ''', (post_id,)).fetchone()
 
-    if post:
+        if not post:
+            return "Post not found", 404
+
         post_data = {
             "id": post[0],
             "title": post[1],
@@ -180,12 +223,22 @@ def show_post(post_id):
             "date": post[3],
             "body": post[4],
             "img_url": post[5],
-            "author": post[6],  # Now correctly fetching the full author name
+            "author": post[6],  
         }
-    else:
-        return "Post not found", 404
 
-    return render_template("post.html", post=post_data, current_user=current_user)
+        # Fetch comments with the first and last names of commenters
+        comments = cursor.execute('''
+            SELECT comment.text, user.first_name || ' ' || user.last_name AS commenter
+            FROM comment
+            JOIN user ON comment.author_id = user.id
+            WHERE comment.post_id = ?
+            ORDER BY comment.id DESC
+        ''', (post_id,)).fetchall()
+
+        comments_list = [{"text": c[0], "commenter": c[1]} for c in comments]
+
+    return render_template("post.html", post=post_data, comment=comments_list, current_user=current_user, form=form)
+
 
 
 
@@ -218,9 +271,8 @@ def add_new_post():
 
 
 # : Use a decorator so only an admin user can edit a post
-
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
-@login_required
+@admin_only
 def edit_post(post_id):
     form = CreatePostForm()
 
@@ -254,10 +306,10 @@ def edit_post(post_id):
 
     return render_template("make-post.html", form=form, is_edit=True, current_user=current_user)
 
-# : Use a decorator so only an admin user can delete a post
 
+# : Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>", methods=["POST"])
-@login_required
+@admin_only
 def delete_post(post_id):
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
