@@ -1,7 +1,7 @@
 import os
 from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
-from flask_bootstrap import Bootstrap4 as Bootstrap5
+from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date
 import sqlite3
@@ -10,6 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
 import smtplib
+from flask_gravatar import Gravatar
 
 
 load_dotenv()
@@ -26,6 +27,16 @@ DB_PATH = "instance/posts.db"
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+
+# For adding profile images to the comment section
+gravatar = Gravatar(app,
+                    size=50,
+                    rating='g',
+                    default='retro',
+                    force_default=False,
+                    force_lower=False,
+                    use_ssl=False,
+                    base_url=None)
 
 class User(UserMixin):
     def __init__(self, id, email, password, first_name, last_name):
@@ -81,7 +92,7 @@ def init_db():
             author_id INTEGER NOT NULL,
             post_id INTEGER NOT NULL,
             FOREIGN KEY (author_id) REFERENCES user (id) ON DELETE CASCADE,
-            FOREIGN KEY (post_id) REFERENCES blog_posts (id) ON DELETE CASCADE
+            FOREIGN KEY (post_id) REFERENCES blog_post (id) ON DELETE CASCADE
             )
             ''')
         conn.commit()
@@ -194,7 +205,7 @@ def show_post(post_id):
         
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO comments (text, author_id, post_id) VALUES (?, ?, ?)",
+            cursor.execute("INSERT INTO comment (text, author_id, post_id) VALUES (?, ?, ?)",
                            (form.text.data, current_user.id, post_id))
             conn.commit()
         flash("Comment added successfully!", "success")
@@ -228,19 +239,16 @@ def show_post(post_id):
 
         # Fetch comments with the first and last names of commenters
         comments = cursor.execute('''
-            SELECT comment.text, user.first_name || ' ' || user.last_name AS commenter
+            SELECT comment.text, user.email, user.id, user.first_name || ' ' || user.last_name AS commenter_name
             FROM comment
             JOIN user ON comment.author_id = user.id
             WHERE comment.post_id = ?
             ORDER BY comment.id DESC
         ''', (post_id,)).fetchall()
 
-        comments_list = [{"text": c[0], "commenter": c[1]} for c in comments]
+        comments_list = [{"text": c[0], "email": c[1], "id": c[2], "commenter_name": c[3]} for c in comments]
 
-    return render_template("post.html", post=post_data, comment=comments_list, current_user=current_user, form=form)
-
-
-
+    return render_template("post.html", post=post_data, comments=comments_list, current_user=current_user, form=form)
 
 
 

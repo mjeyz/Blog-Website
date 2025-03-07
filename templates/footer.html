@@ -29,7 +29,7 @@
                         </a>
                     </li>
                 </ul>
-                <div class="small text-center text-muted fst-italic">Copyright &copy;  Blog {{ current_year }}</div>
+                <div class="small text-center text-muted fst-italic">Copyright &copy; Blog <span id="currentYear"></span></div>
             </div>
         </div>
     </div>
@@ -38,5 +38,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Core theme JS-->
 <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+<script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+</script>
 </body>
 </html>

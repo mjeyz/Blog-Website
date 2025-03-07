@@ -36,6 +36,27 @@
                 {{ ckeditor.load() }}
                 {{ ckeditor.config(name='body') }}
                 {{ render_form(form, novalidate=True, button_map={"submit": "primary"})}}
+
+                <!-- Comment Section -->
+                <div class="comment mt-5">
+                    <h4 class="mb-3">Comments</h4>
+                    <ul class="commentList list-unstyled">
+                        {% for comment in comments %}
+                        <li class="d-flex align-items-start mb-3 border-bottom pb-3">
+                            <!-- Gravatar Image -->
+                            <div class="commenterImage me-3">
+                                <img src="{{ comment.email | gravatar(size=50) }}" class="rounded-circle border" style="vertical-align: middle;" />
+                            </div>
+                            <!-- Comment Text -->
+                            <div class="commentText">
+                                <strong class="text-dark fs-6 d-block">{{ comment.commenter_name }}</strong>
+                                <p class="text-muted fs-6 mb-0">{{ comment.text | safe }}</p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
             </div>
         </div>
     </div>
