@@ -178,7 +178,7 @@ def get_all_posts():
         blog_post = cursor.fetchall()
 
     posts = [blog for blog in blog_post]
-    return render_template("index.html", all_posts=posts, current_user=current_user)
+    return render_template("index.html", all_posts=posts, current_user=current_user, current_year=date.today().year)
 
 # TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
