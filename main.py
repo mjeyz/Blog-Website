@@ -11,17 +11,24 @@ from flask_login import login_user, login_required, logout_user, LoginManager, U
 from dotenv import load_dotenv
 import smtplib
 from flask_gravatar import Gravatar
-
+import psycopg2
 
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("FLASK_KEY")
+app.config['SECRET_KEY'] = "34dfhdgfh46ydbjtytg"
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
 # DATABASE PATH
-DB_PATH = "instance/posts.db"
+DB_PATH = "postgres://postgres:9992@localhost:5432/postgres"
+conn = psycopg2.connect(
+    dbname="postgres",
+    user="postgres",
+    password="9992",
+    host="localhost",
+    port="5432"
+)
 
 # : Configure Flask-Login
 login_manager = LoginManager()
@@ -38,6 +45,7 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
+
 class User(UserMixin):
     def __init__(self, id, email, password, first_name, last_name):
         self.id = id
@@ -46,16 +54,16 @@ class User(UserMixin):
         self.first_name = first_name
         self.last_name = last_name
 
+
 @login_manager.user_loader
 def load_user(user_id):
-    with sqlite3.connect(DB_PATH) as conn:
+    with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * , password FROM user WHERE id = ?", (user_id,))
+        cursor.execute("SELECT id, email, password, first_name, last_name FROM users WHERE id = %s", (user_id,))
         user = cursor.fetchone()
         if user:
-            return User(id=user[0], email=user[1], first_name=user[3], last_name=user[4], password=user[2])
+            return User(id=user[0], email=user[1], password=user[2], first_name=user[3], last_name=user[4])
     return None
-
 
 
 def init_db():
@@ -97,7 +105,54 @@ def init_db():
             ''')
         conn.commit()
 
-init_db()
+
+# init_db()
+
+def init_postgres_db():
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(100) NOT NULL,
+                first_name VARCHAR(100) NOT NULL,
+                last_name VARCHAR(100) NOT NULL
+            )
+        """)
+        new_func(cur)
+        conn.commit()
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS comment (
+                id INTEGER PRIMARY KEY,
+                text TEXT NOT NULL,
+                author_id INTEGER NOT NULL,
+                post_id INTEGER NOT NULL,
+                FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
+                FOREIGN KEY (post_id) REFERENCES blog_post (id) ON DELETE CASCADE
+            )
+        ''')
+        conn.commit()
+
+
+def new_func(cur):
+    conn.commit()
+    cur.execute("""
+            CREATE TABLE IF NOT EXISTS blog_post (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(500) NOT NULL,
+                subtitle VARCHAR(500) NOT NULL,
+                date VARCHAR(255) NOT NULL,
+                body TEXT NOT NULL,
+                author VARCHAR(255) NOT NULL,
+                img_url VARCHAR(500) NOT NULL,
+                author_id INTEGER NOT NULL,
+                FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+
+
+init_postgres_db()
+
 
 # Create an admin-only decorator
 def admin_only(f):
@@ -110,6 +165,7 @@ def admin_only(f):
 
     return decorated_function
 
+
 # : Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
 def register():
@@ -121,20 +177,20 @@ def register():
         last_name = form.last_name.data
 
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
-        with sqlite3.connect(DB_PATH) as conn:
+        with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id FROM user WHERE email = ?", (email,))
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             existing_user = cursor.fetchone()
 
             if existing_user:
                 flash("You are already registered, please login instead", "danger")
                 return redirect(url_for("login"))
 
-            cursor.execute("INSERT INTO user (email, password, first_name, last_name) VALUES (?, ?, ?, ?)",
+            cursor.execute("INSERT INTO users (email, password, first_name, last_name) VALUES (%s, %s, %s, %s)",
                            (email, hashed_password, first_name, last_name))
             conn.commit()
 
-            cursor.execute("SELECT id FROM user WHERE email = ?", (email,))
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             user_id = cursor.fetchone()[0]
             user = User(id=user_id, email=email, password=hashed_password, first_name=first_name, last_name=last_name)
 
@@ -145,7 +201,6 @@ def register():
     return render_template("register.html", form=form, current_user=current_user)
 
 
-
 # : Retrieve a user from the database based on their email.
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -154,9 +209,9 @@ def login():
         email = form.email.data
         password = form.password.data
 
-        with sqlite3.connect(DB_PATH) as conn:
+        with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM user WHERE email = ?", (email,))
+            cursor.execute("SELECT id, email, password, first_name, last_name FROM users WHERE email = %s", (email,))
             user = cursor.fetchone()
 
             if not user:
@@ -183,13 +238,14 @@ def logout():
 
 @app.route('/')
 def get_all_posts():
-    with sqlite3.connect(DB_PATH) as conn:
+    with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM blog_post")
         blog_post = cursor.fetchall()
 
     posts = [blog for blog in blog_post]
     return render_template("index.html", all_posts=posts, current_user=current_user, current_year=date.today().year)
+
 
 # : Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
@@ -202,18 +258,18 @@ def show_post(post_id):
         if not current_user.is_authenticated:  # Check if the user is logged in
             flash("You must be logged in to comment.", "warning")
             return redirect(url_for("login"))  # Redirect to login page
-        
-        with sqlite3.connect(DB_PATH) as conn:
+
+        with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO comment (text, author_id, post_id) VALUES (?, ?, ?)",
+            cursor.execute("INSERT INTO comment (text, author_id, post_id) VALUES (%s, %s, %s)",
                            (form.text.data, current_user.id, post_id))
             conn.commit()
         flash("Comment added successfully!", "success")
         return redirect(url_for("show_post", post_id=post_id))
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        
+
         # Fetch the blog post details, using first_name and last_name instead of name
         post = cursor.execute('''
             SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
@@ -234,7 +290,7 @@ def show_post(post_id):
             "date": post[3],
             "body": post[4],
             "img_url": post[5],
-            "author": post[6],  
+            "author": post[6],
         }
 
         # Fetch comments with the first and last names of commenters
@@ -251,25 +307,26 @@ def show_post(post_id):
     return render_template("post.html", post=post_data, comments=comments_list, current_user=current_user, form=form)
 
 
-
 # : Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
-        with sqlite3.connect(DB_PATH) as conn:
+        with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO blog_post (title, subtitle, date, body, author, img_url, author_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (form.title.data,
-                  form.subtitle.data,
-                  date.today().strftime("%B %d, %Y"),
-                  form.body.data,
-                  form.author.data,
-                  form.img_url.data,
-                  current_user.id))  # Add the author_id here
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ''', (
+                form.title.data,
+                form.subtitle.data,
+                date.today().strftime("%B %d, %Y"),
+                form.body.data,
+                form.author.data,
+                form.img_url.data,
+                current_user.id
+            ))  # Add the author_id here
 
             conn.commit()
 
@@ -284,7 +341,7 @@ def add_new_post():
 def edit_post(post_id):
     form = CreatePostForm()
 
-    with sqlite3.connect(DB_PATH) as conn:
+    with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
 
         post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
@@ -319,11 +376,11 @@ def edit_post(post_id):
 @app.route("/delete/<int:post_id>", methods=["POST"])
 @admin_only
 def delete_post(post_id):
-    with sqlite3.connect(DB_PATH) as conn:
+    with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
 
         # Fetch post to ensure it exists
-        post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
+        post = cursor.execute("SELECT * FROM blog_post WHERE id = %s", (post_id,)).fetchone()
 
         if post is None:
             flash("Post not found.", "error")
@@ -336,9 +393,11 @@ def delete_post(post_id):
         flash("Post deleted successfully!", "success")
         return redirect(url_for("get_all_posts"))
 
+
 @app.route("/about")
 def about():
     return render_template("about.html", current_user=current_user)
+
 
 @app.route("/download", methods=["GET", "POST"])
 def download():
@@ -358,13 +417,13 @@ def contact():
             connection.starttls()
             connection.login(user=os.getenv("EMAIL"), password=os.getenv("PASSWORD"))
             connection.sendmail(from_addr=email,
-                                    to_addrs=os.getenv("EMAIL"),
-                                    msg=f"subject:User Alert\n\n"
-                                        f"Name: {name}\n"
-                                        f"Email: {email}\n"
-                                        f"Phone: {phone}\n"
-                                        f"Message: {message}\n"
-                                        f"Now it's time to contect him")
+                                to_addrs=os.getenv("EMAIL"),
+                                msg=f"subject:User Alert\n\n"
+                                    f"Name: {name}\n"
+                                    f"Email: {email}\n"
+                                    f"Phone: {phone}\n"
+                                    f"Message: {message}\n"
+                                    f"Now it's time to contect him")
         except smtplib.SMTPException as e:
             print(f"Smtp Error: {e}")
         else:
@@ -372,7 +431,6 @@ def contact():
             flash("Message Sent Successfully", "success")
         finally:
             connection.close()
-
 
     return render_template("contact.html", current_user=current_user)
 
