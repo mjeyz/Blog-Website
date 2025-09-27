@@ -139,17 +139,16 @@ def new_func(cur):
     cur.execute("""
             CREATE TABLE IF NOT EXISTS blog_post (
                 id SERIAL PRIMARY KEY,
-                title VARCHAR(500) NOT NULL,
-                subtitle VARCHAR(500) NOT NULL,
-                date VARCHAR(255) NOT NULL,
+                title VARCHAR NOT NULL,
+                subtitle VARCHAR NOT NULL,
+                date VARCHAR NOT NULL,
                 body TEXT NOT NULL,
-                author VARCHAR(255) NOT NULL,
-                img_url VARCHAR(500) NOT NULL,
+                author VARCHAR NOT NULL,
+                img_url VARCHAR NOT NULL,
                 author_id INTEGER NOT NULL,
                 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
-
 
 init_postgres_db()
 
@@ -274,10 +273,10 @@ def show_post(post_id):
         post = cursor.execute('''
             SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
                    blog_post.body, blog_post.img_url, 
-                   user.first_name || ' ' || user.last_name AS author
+                   users.first_name || ' ' || users.last_name AS author
             FROM blog_post 
-            JOIN user ON blog_post.author_id = user.id 
-            WHERE blog_post.id = ?
+            JOIN users ON blog_post.author_id = users.id 
+            WHERE blog_post.id = %s
         ''', (post_id,)).fetchone()
 
         if not post:
@@ -437,3 +436,5 @@ def contact():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5003)
+
+0
