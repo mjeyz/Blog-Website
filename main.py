@@ -30,6 +30,7 @@ conn = psycopg2.connect(
     port="5432"
 )
 
+
 # : Configure Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -45,7 +46,6 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
-
 class User(UserMixin):
     def __init__(self, id, email, password, first_name, last_name):
         self.id = id
@@ -53,7 +53,6 @@ class User(UserMixin):
         self.password = password
         self.first_name = first_name
         self.last_name = last_name
-
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -64,6 +63,7 @@ def load_user(user_id):
         if user:
             return User(id=user[0], email=user[1], password=user[2], first_name=user[3], last_name=user[4])
     return None
+
 
 
 def init_db():
@@ -105,7 +105,6 @@ def init_db():
             ''')
         conn.commit()
 
-
 # init_db()
 
 def init_postgres_db():
@@ -123,7 +122,7 @@ def init_postgres_db():
         conn.commit()
         cur.execute('''
             CREATE TABLE IF NOT EXISTS comment (
-                id INTEGER PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 text TEXT NOT NULL,
                 author_id INTEGER NOT NULL,
                 post_id INTEGER NOT NULL,
@@ -133,18 +132,16 @@ def init_postgres_db():
         ''')
         conn.commit()
 
-
 def new_func(cur):
-    conn.commit()
     cur.execute("""
             CREATE TABLE IF NOT EXISTS blog_post (
                 id SERIAL PRIMARY KEY,
-                title VARCHAR NOT NULL,
-                subtitle VARCHAR NOT NULL,
-                date VARCHAR NOT NULL,
+                title TEXT NOT NULL,
+                subtitle TEXT NOT NULL,
+                date TEXT NOT NULL,
                 body TEXT NOT NULL,
-                author VARCHAR NOT NULL,
-                img_url VARCHAR NOT NULL,
+                author TEXT NOT NULL,
+                img_url TEXT NOT NULL,
                 author_id INTEGER NOT NULL,
                 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
             )
@@ -163,7 +160,6 @@ def admin_only(f):
         return f(*args, **kwargs)
 
     return decorated_function
-
 
 # : Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
@@ -198,6 +194,7 @@ def register():
             return redirect(url_for("get_all_posts"))
 
     return render_template("register.html", form=form, current_user=current_user)
+
 
 
 # : Retrieve a user from the database based on their email.
@@ -245,7 +242,6 @@ def get_all_posts():
     posts = [blog for blog in blog_post]
     return render_template("index.html", all_posts=posts, current_user=current_user, current_year=date.today().year)
 
-
 # : Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 @login_required
@@ -257,7 +253,7 @@ def show_post(post_id):
         if not current_user.is_authenticated:  # Check if the user is logged in
             flash("You must be logged in to comment.", "warning")
             return redirect(url_for("login"))  # Redirect to login page
-
+        
         with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO comment (text, author_id, post_id) VALUES (%s, %s, %s)",
@@ -266,44 +262,50 @@ def show_post(post_id):
         flash("Comment added successfully!", "success")
         return redirect(url_for("show_post", post_id=post_id))
 
-    with psycopg2.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
+    try:
+        with psycopg2.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+                
+            # Fetch the blog post details, using first_name and last_name instead of name
+            cursor.execute('''
+                SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
+                       blog_post.body, blog_post.img_url, 
+                       users.first_name || ' ' || users.last_name AS author
+                FROM blog_post 
+                JOIN users ON blog_post.author_id = users.id 
+                WHERE blog_post.id = %s
+            ''', (post_id,))
+            post = cursor.fetchone()
 
-        # Fetch the blog post details, using first_name and last_name instead of name
-        post = cursor.execute('''
-            SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
-                   blog_post.body, blog_post.img_url, 
-                   users.first_name || ' ' || users.last_name AS author
-            FROM blog_post 
-            JOIN users ON blog_post.author_id = users.id 
-            WHERE blog_post.id = %s
-        ''', (post_id,)).fetchone()
+            if post is None:
+                flash("Post not found.", "danger")
+                return redirect(url_for("get_all_posts"))
 
-        if not post:
-            return "Post not found", 404
+            post_data = {
+                "id": post[0],
+                "title": post[1],
+                "subtitle": post[2],
+                "date": post[3],
+                "body": post[4],
+                "img_url": post[5],
+                "author": post[6],  
+            }
 
-        post_data = {
-            "id": post[0],
-            "title": post[1],
-            "subtitle": post[2],
-            "date": post[3],
-            "body": post[4],
-            "img_url": post[5],
-            "author": post[6],
-        }
-
-        # Fetch comments with the first and last names of commenters
-        comments = cursor.execute('''
-            SELECT comment.text, user.email, user.id, user.first_name || ' ' || user.last_name AS commenter_name
-            FROM comment
-            JOIN user ON comment.author_id = user.id
-            WHERE comment.post_id = ?
-            ORDER BY comment.id DESC
-        ''', (post_id,)).fetchall()
-
-        comments_list = [{"text": c[0], "email": c[1], "id": c[2], "commenter_name": c[3]} for c in comments]
+            cursor.execute('''
+                SELECT comment.text, users.email, users.id, users.first_name || ' ' || users.last_name AS commenter_name
+                FROM comment
+                JOIN users ON comment.author_id = users.id
+                WHERE comment.post_id = %s
+                ORDER BY comment.id DESC
+            ''', (post_id,))
+            comments = cursor.fetchall()
+            comments_list = [{"text": c[0], "email": c[1], "id": c[2], "commenter_name": c[3]} for c in comments]
+    except Exception as e:
+        flash(f"Database error: {e}", "danger")
+        return redirect(url_for("get_all_posts"))
 
     return render_template("post.html", post=post_data, comments=comments_list, current_user=current_user, form=form)
+
 
 
 # : Use a decorator so only an admin user can create a new post
@@ -342,8 +344,8 @@ def edit_post(post_id):
 
     with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-
-        post = cursor.execute("SELECT * FROM blog_post WHERE id = ?", (post_id,)).fetchone()
+        cursor.execute("SELECT * FROM blog_post WHERE id = %s", (post_id,))
+        post = cursor.fetchone()
         if post is None:
             return "Post not found", 404
 
@@ -351,8 +353,8 @@ def edit_post(post_id):
             cursor.execute(
                 """
                 UPDATE blog_post
-                SET title = ?, body = ?, author = ?, img_url = ?, subtitle = ?
-                WHERE id = ?
+                SET title = %s, body = %s, author = %s, img_url = %s, subtitle = %s
+                WHERE id = %s
                 """,
                 (form.title.data, form.body.data, form.author.data, form.img_url.data, form.subtitle.data, post_id)
             )
@@ -377,26 +379,23 @@ def edit_post(post_id):
 def delete_post(post_id):
     with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-
-        # Fetch post to ensure it exists
-        post = cursor.execute("SELECT * FROM blog_post WHERE id = %s", (post_id,)).fetchone()
+        cursor.execute("SELECT * FROM blog_post WHERE id = %s", (post_id,))
+        post = cursor.fetchone()
 
         if post is None:
             flash("Post not found.", "error")
             return redirect(url_for("get_all_posts"))
 
         # Delete the post
-        cursor.execute("DELETE FROM blog_post WHERE id = ?", (post_id,))
+        cursor.execute("DELETE FROM blog_post WHERE id = %s", (post_id,))
         conn.commit()
 
         flash("Post deleted successfully!", "success")
         return redirect(url_for("get_all_posts"))
 
-
 @app.route("/about")
 def about():
     return render_template("about.html", current_user=current_user)
-
 
 @app.route("/download", methods=["GET", "POST"])
 def download():
@@ -416,13 +415,13 @@ def contact():
             connection.starttls()
             connection.login(user=os.getenv("EMAIL"), password=os.getenv("PASSWORD"))
             connection.sendmail(from_addr=email,
-                                to_addrs=os.getenv("EMAIL"),
-                                msg=f"subject:User Alert\n\n"
-                                    f"Name: {name}\n"
-                                    f"Email: {email}\n"
-                                    f"Phone: {phone}\n"
-                                    f"Message: {message}\n"
-                                    f"Now it's time to contect him")
+                                    to_addrs=os.getenv("EMAIL"),
+                                    msg=f"subject:User Alert\n\n"
+                                        f"Name: {name}\n"
+                                        f"Email: {email}\n"
+                                        f"Phone: {phone}\n"
+                                        f"Message: {message}\n"
+                                        f"Now it's time to contect him")
         except smtplib.SMTPException as e:
             print(f"Smtp Error: {e}")
         else:
@@ -431,9 +430,9 @@ def contact():
         finally:
             connection.close()
 
+
     return render_template("contact.html", current_user=current_user)
 
 
 if __name__ == "__main__":
     app.run(debug=True, port=5003)
-
