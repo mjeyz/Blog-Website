@@ -65,48 +65,6 @@ def load_user(user_id):
     return None
 
 
-
-def init_db():
-    if not os.path.exists(DB_PATH):
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
-                first_name TEXT NOT NULL,
-                last_name TEXT NOT NULL
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS blog_post (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL UNIQUE,
-                subtitle TEXT NOT NULL,
-                date TEXT NOT NULL,
-                body TEXT NOT NULL,
-                author TEXT NOT NULL,
-                img_url TEXT NOT NULL,
-                author_id INTEGER NOT NULL,
-                FOREIGN KEY (author_id) REFERENCES user(id) ON DELETE CASCADE
-            )
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS comment (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT NOT NULL,
-            author_id INTEGER NOT NULL,
-            post_id INTEGER NOT NULL,
-            FOREIGN KEY (author_id) REFERENCES user (id) ON DELETE CASCADE,
-            FOREIGN KEY (post_id) REFERENCES blog_post (id) ON DELETE CASCADE
-            )
-            ''')
-        conn.commit()
-
-# init_db()
-
 def init_postgres_db():
     with conn.cursor() as cur:
         cur.execute("""
