@@ -4,7 +4,6 @@ from flask import Flask, render_template, redirect, url_for, request, flash, sen
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date
-import sqlite3
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
