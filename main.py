@@ -12,6 +12,7 @@ import smtplib
 from flask_gravatar import Gravatar
 import psycopg2
 
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -37,12 +38,12 @@ login_manager.login_view = "login"
 
 # For adding profile images to the comment section
 gravatar = Gravatar(app,
-                    size=50,
+                    size=50,  # Set your preferred profile image size
                     rating='g',
-                    default='retro',
+                    default='wavatar',  # You can change to 'monsterid', 'wavatar', etc.
                     force_default=False,
-                    force_lower=False,
-                    use_ssl=False,
+                    force_lower=True,  # Ensure email is lowercase for consistency
+                    use_ssl=True,      # Use SSL for secure image URLs
                     base_url=None)
 
 class User(UserMixin):
