@@ -368,25 +368,35 @@ def contact():
         phone = request.form.get("phone")
         message = request.form.get("message")
 
-        try:
-            connection = smtplib.SMTP("smtp.gmail.com")
-            connection.starttls()
-            connection.login(user=os.getenv("EMAIL"), password=os.getenv("PASSWORD"))
-            connection.sendmail(from_addr=email,
-                                    to_addrs=os.getenv("EMAIL"),
-                                    msg=f"subject:User Alert\n\n"
-                                        f"Name: {name}\n"
-                                        f"Email: {email}\n"
-                                        f"Phone: {phone}\n"
-                                        f"Message: {message}\n"
-                                        f"Now it's time to contect him")
-        except smtplib.SMTPException as e:
-            print(f"Smtp Error: {e}")
+        if not email:
+            flash("Please provide your email address.", "danger")
         else:
-            print("Successfully Sent your message")
-            flash("Message Sent Successfully", "success")
-        finally:
-            connection.close()
+            smtp_email = "thisismjeyz@gmail.com"
+            smtp_password = "gicx goix fiau uxjl"
+            if not smtp_email or not smtp_password:
+                flash("Server email configuration is missing.", "danger")
+            else:
+                connection = None
+                try:
+                    connection = smtplib.SMTP("smtp.gmail.com", 587)
+                    connection.starttls()
+                    connection.login(user=smtp_email, password=smtp_password)
+                    connection.sendmail(from_addr=email,
+                                            to_addrs=smtp_email,
+                                            msg=f"subject:User Alert\n\n"
+                                                f"Name: {name}\n"
+                                                f"Email: {email}\n"
+                                                f"Phone: {phone}\n"
+                                                f"Message: {message}\n"
+                                                f"Now it's time to contect him")
+                except smtplib.SMTPException as e:
+                    print(f"Smtp Error: {e}")
+                else:
+                    print("Successfully Sent your message")
+                    flash("Message Sent Successfully", "success")
+                finally:
+                    if connection:
+                        connection.close()
 
 
     return render_template("contact.html", current_user=current_user)
