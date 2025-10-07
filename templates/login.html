@@ -22,7 +22,7 @@ include "header.html" %}
     <div class="container">
         <div class="row">
             <!-- : add a flash message here for users registering twice -->
-            <!-- {% with messages = get_flashed_messages(with_categories=true) %}
+             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
@@ -31,12 +31,12 @@ include "header.html" %}
             {% endfor %}
             {% endif %}
             {% endwith %}
-            <div class="col-lg-8 col-md-10 mx-auto"> -->
+            <div class="col-lg-8 col-md-10 mx-auto">
                 <!--: render a login form here-->
                 {{ render_form(form, novalidate=True, button_map={"submit": "primary"})}}
-            </div>
         </div>
     </div>
+
 </main>
 
 {% include "footer.html" %} {% endblock %}

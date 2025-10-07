@@ -196,7 +196,7 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 
-@app.route('/')
+@app.route('/', methods=["GET", "POST", "DELETE", "PUT", "PATCH"])
 def get_all_posts():
     with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
