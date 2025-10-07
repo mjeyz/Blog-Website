@@ -25,18 +25,26 @@ include "header.html" %}
              {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" id="flash-message-{{ loop.index }}">
+                <div class="w-100 text-center">
                 {{ message }}
+                </div>
             </div>
+            <script>
+                setTimeout(function() {
+                    var msg = document.getElementById('flash-message-{{ loop.index }}');
+                    if (msg) { msg.style.display = 'none'; }
+                }, 5000);
+            </script>
             {% endfor %}
             {% endif %}
             {% endwith %}
             <div class="col-lg-8 col-md-10 mx-auto">
                 <!--: render a login form here-->
                 {{ render_form(form, novalidate=True, button_map={"submit": "primary"})}}
+            </div>
         </div>
     </div>
-
 </main>
 
 {% include "footer.html" %} {% endblock %}

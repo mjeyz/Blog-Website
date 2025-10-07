@@ -19,7 +19,26 @@
         </div>
     </div>
 </header>
-
+<div class="row">
+            <!-- : add a flash message here for users registering twice -->
+             {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" id="flash-message-{{ loop.index }}">
+                <div class="w-100 text-center">
+                {{ message }}
+                </div>
+            </div>
+            <script>
+                setTimeout(function() {
+                    var msg = document.getElementById('flash-message-{{ loop.index }}');
+                    if (msg) { msg.style.display = 'none'; }
+                }, 5000);
+            </script>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
 <article>
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
