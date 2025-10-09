@@ -53,34 +53,3 @@ include "header.html" %}
 </main>
 
 {% include "footer.html" %} {% endblock %}
-    <!-- Password visibility toggle script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const passwordInput = document.getElementById('password');
-            if (!passwordInput) return;
-
-            // Create toggle icon
-            const toggle = document.createElement('span');
-            toggle.innerHTML = '👁️';
-            toggle.style.position = 'absolute';
-            toggle.style.right = '15px';
-            toggle.style.top = '50%';
-            toggle.style.transform = 'translateY(-50%)';
-            toggle.style.cursor = 'pointer';
-
-            // Wrap field for positioning
-            const wrapper = document.createElement('div');
-            wrapper.style.position = 'relative';
-            passwordInput.parentNode.insertBefore(wrapper, passwordInput);
-            wrapper.appendChild(passwordInput);
-            wrapper.appendChild(toggle);
-
-            // Toggle password visibility
-            toggle.addEventListener('click', () => {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                toggle.innerHTML = type === 'password' ? '👁️' : '🙈';
-            });
-        });
-    </script>
-

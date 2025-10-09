@@ -408,5 +408,10 @@ def contact():
     return render_template("contact.html", current_user=current_user)
 
 
+@app.route("/profile")
+def profile():
+    return render_template("profile.html", current_user=current_user)
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5003)
