@@ -1,43 +1,50 @@
-<!-- Footer-->
-<footer class="border-top">
-    <div class="container px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-7">
-                <ul class="list-inline text-center">
-                    <li class="list-inline-item">
-                        <a href="https://www.linkedin.com/in/mjeyz/">
-                            <span class="fa-stack fa-lg">
-                                <i class="fas fa-circle fa-stack-2x"></i>
-                                <i class="fab fa-linkedin-in fa-stack-1x fa-inverse"></i>
-                            </span>
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <a href="https://www.facebook.com/profile.php?id=61566127081692">
-                                  <span class="fa-stack fa-lg">
-                                      <i class="fas fa-circle fa-stack-2x"></i>
-                                      <i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
-                                  </span>
-                        </a>
-                    </li>
-                    <li class="list-inline-item">
-                        <a href="https://github.com/mjeyz">
-                                  <span class="fa-stack fa-lg">
-                                      <i class="fas fa-circle fa-stack-2x"></i>
-                                      <i class="fab fa-github fa-stack-1x fa-inverse"></i>
-                                  </span>
-                        </a>
-                    </li>
-                </ul>
-                <div class="small text-center text-muted fst-italic">Copyright &copy; Blog <span id="currentYear"></span></div>
-            </div>
-        </div>
+<!-- Footer -->
+<footer class="border-top mt-5 py-4 bg-light">
+  <div class="container px-4 px-lg-5 text-center">
+    <ul class="list-inline mb-3">
+      <li class="list-inline-item mx-2">
+        <a href="https://www.linkedin.com/in/mjeyz/" target="_blank" class="text-decoration-none text-dark">
+          <span class="fa-stack fa-lg">
+            <i class="fas fa-circle fa-stack-2x"></i>
+            <i class="fab fa-linkedin-in fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+      </li>
+      <li class="list-inline-item mx-2">
+        <a href="https://www.facebook.com/profile.php?id=61566127081692" target="_blank" class="text-decoration-none text-dark">
+          <span class="fa-stack fa-lg">
+            <i class="fas fa-circle fa-stack-2x"></i>
+            <i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+      </li>
+      <li class="list-inline-item mx-2">
+        <a href="https://github.com/mjeyz" target="_blank" class="text-decoration-none text-dark">
+          <span class="fa-stack fa-lg">
+            <i class="fas fa-circle fa-stack-2x"></i>
+            <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+      </li>
+    </ul>
+    <div class="small text-muted fst-italic">
+      Copyright &copy; Blog <span id="currentYear"></span>
     </div>
+  </div>
 </footer>
-<!-- Bootstrap core JS-->
+
+<!-- Bootstrap core JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Core theme JS-->
+
+<!-- Core theme JS -->
 <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
 <script>
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  document.getElementById('currentYear').textContent = new Date().getFullYear();
+  // Simple hover effect for icons
+  document.querySelectorAll('.fa-stack').forEach(el => {
+    el.addEventListener('mouseenter', () => el.style.transform = 'scale(1.15)');
+    el.addEventListener('mouseleave', () => el.style.transform = 'scale(1)');
+    el.style.transition = 'transform 0.3s ease';
+  });
 </script>
