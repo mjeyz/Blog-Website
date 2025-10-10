@@ -1,0 +1,38 @@
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row d-flex justify-content-center">
+        <div class="col col-md-9 col-lg-7 col-xl-6">
+            <div class="card" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="d-flex">
+
+                        <div class="flex-grow-1 ms-4">
+                            <h5 class="mb-1">{{ current_user.username }}</h5>
+                            <p class="mb-2 text-muted">{{ current_user.email }}</p>
+                            <!-- Blog Statistics -->
+                            <div class="d-flex justify-content-start rounded-3 p-2 mb-3 bg-light">
+                                <div class="px-3">
+                                    <p class="small text-muted mb-1">Posts</p>
+                                    <p class="mb-0 text-center">{{ current_user.posts_count }}</p>
+                                </div>
+                                <div class="px-3">
+                                    <p class="small text-muted mb-1">Followers</p>
+                                    <p class="mb-0 text-center">{{ current_user.followers_count }}</p>
+                                </div>
+                            </div>
+                            <!-- Action Buttons -->
+                            <div class="d-flex pt-1">
+                                <button type="button" class="btn btn-outline-primary me-1 flex-grow-1">Follow</button>
+                                <button type="button" class="btn btn-primary flex-grow-1">Message</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
