@@ -2,7 +2,7 @@ from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from datetime import date
+from datetime import date, timedelta
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
@@ -24,6 +24,8 @@ ckeditor = CKEditor(app)
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_PKG_TYPE'] = 'full'
 app.config['CKEDITOR_CDN_URL'] = 'https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js'
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
+app.config['REMEMBER_COOKIE_REFRESH_EACH_REQUEST'] = True
 
 
 # DATABASE PATH
@@ -184,7 +186,7 @@ def login():
                 return redirect(url_for("login"))
 
             user_obj = User(id=user[0], email=user[1], password=user[2], first_name=user[3], last_name=user[4])
-            login_user(user_obj)
+            login_user(user_obj, remember=form.remember.data, duration=timedelta(days=7))
             return redirect(url_for("get_all_posts"))
 
     return render_template("login.html", form=form, current_user=current_user)
