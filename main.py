@@ -155,7 +155,7 @@ def register():
             user_id = cursor.fetchone()[0]
             user = User(id=user_id, email=email, password=hashed_password, first_name=first_name, last_name=last_name)
 
-            login_user(user)
+            login_user(user, remember=form.remember.data, duration=timedelta(days=7))
             flash("Registration successful! Welcome.", "success")
             return redirect(url_for("get_all_posts"))
 

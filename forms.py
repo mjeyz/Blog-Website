@@ -19,6 +19,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     first_name = StringField("First Name", validators=[DataRequired()])
     last_name = StringField("Last Name", validators=[DataRequired(), Length(min=4, max=25)])
+    remember = BooleanField("Remember Me")
     submit = SubmitField("Submit")
 
 # : Create a LoginForm to log in existing users
