@@ -19,8 +19,6 @@ app.config['SECRET_KEY'] = "34dfhdgfh46ydbjtytg"
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
-# Ensure CKEditor uses the latest secure version (4.25.1-lts)
-# You can specify the CKEDITOR_SERVE_LOCAL and CKEDITOR_PKG_TYPE in your Flask config
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_PKG_TYPE'] = 'full'
 app.config['CKEDITOR_CDN_URL'] = 'https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js'
