@@ -44,12 +44,12 @@ login_manager.login_view = "login"
 
 # For adding profile images to the comment section
 gravatar = Gravatar(app,
-                    size=50,  # Set your preferred profile image size
+                    size=50,
                     rating='g',
                     default='wavatar',  # You can change to 'monsterid', 'wavatar', etc.
                     force_default=False,
-                    force_lower=True,  # Ensure email is lowercase for consistency
-                    use_ssl=True,      # Use SSL for secure image URLs
+                    force_lower=True,
+                    use_ssl=True,
                     base_url=None)
 
 class User(UserMixin):
