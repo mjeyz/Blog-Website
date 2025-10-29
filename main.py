@@ -447,6 +447,18 @@ def upload_image():
             return redirect(url_for('profile'))
     return render_template('upload.html')
 
+@app.route("/edit-profile", methods=["GET", "POST"])
+@login_required
+def edit_profile():
+    if request.method == "POST":
+        current_user.username = request.form.get("username")
+        current_user.bio = request.form.get("bio")
+        current_user.location = request.form.get("location")
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for("profile"))
+    return render_template("edit_profile.html", user=current_user)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5003)
