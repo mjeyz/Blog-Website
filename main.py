@@ -1,3 +1,5 @@
+import os
+import secrets
 from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
 from flask_bootstrap import Bootstrap5
@@ -10,6 +12,9 @@ from dotenv import load_dotenv
 import smtplib
 from flask_gravatar import Gravatar
 import psycopg2
+from PIL import Image
+from werkzeug.utils import secure_filename
+
 
 
 load_dotenv()
@@ -24,7 +29,7 @@ app.config['CKEDITOR_PKG_TYPE'] = 'full'
 app.config['CKEDITOR_CDN_URL'] = 'https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js'
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
 app.config['REMEMBER_COOKIE_REFRESH_EACH_REQUEST'] = True
-
+app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
 
 # DATABASE PATH
 DB_PATH = "postgres://postgres:9992@localhost:5432/postgres"
@@ -52,13 +57,30 @@ gravatar = Gravatar(app,
                     use_ssl=True,
                     base_url=None)
 
+
+# Function to save and resize image
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
+
+    # Resize like Google
+    output_size = (200, 200)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
+
 class User(UserMixin):
-    def __init__(self, id, email, password, first_name, last_name):
+    def __init__(self, id, email, password, first_name, last_name, image_file="default.jpg"):
         self.id = id
         self.email = email
         self.password = password
         self.first_name = first_name
         self.last_name = last_name
+        self.image_file = image_file
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -409,9 +431,21 @@ def contact():
     return render_template("contact.html", current_user=current_user)
 
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 def profile():
     return render_template("profile.html", current_user=current_user)
+
+@app.route("/upload_image", methods=['GET', 'POST'])
+def upload_image():
+    if request.method == 'POST':
+        file = request.files['picture']
+        if file and file.filename != '':
+            picture_file = save_picture(file)
+            # Example: update the current user's image
+            current_user.image_file = picture_file
+            # Save this info in your user storage (if you have a file or db)
+            return redirect(url_for('profile'))
+    return render_template('upload.html')
 
 
 if __name__ == "__main__":

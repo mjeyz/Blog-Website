@@ -1,32 +1,96 @@
-
 {% block title %}User Profile{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row d-flex justify-content-center">
-        <div class="col col-md-9 col-lg-7 col-xl-6">
-            <div class="card" style="border-radius: 15px;">
+        <div class="col col-md-9 col-lg-7 col-xl-5">
+            <!-- Modern Card Design -->
+            <div class="card modern-profile-card">
                 <div class="card-body p-4">
-                    <div class="d-flex">
-
-                        <div class="flex-grow-1 ms-4">
-                            <h5 class="mb-1">{{ current_user.username }}</h5>
-                            <p class="mb-2 text-muted">{{ current_user.email }}</p>
-                            <!-- Blog Statistics -->
-                            <div class="d-flex justify-content-start rounded-3 p-2 mb-3 bg-light">
-                                <div class="px-3">
-                                    <p class="small text-muted mb-1">Posts</p>
-                                    <p class="mb-0 text-center">{{ current_user.posts_count }}</p>
-                                </div>
-                                <div class="px-3">
-                                    <p class="small text-muted mb-1">Followers</p>
-                                    <p class="mb-0 text-center">{{ current_user.followers_count }}</p>
+                    <!-- Header with background gradient -->
+                    <div class="profile-header mb-4">
+                        <div class="d-flex align-items-start">
+                            <!-- Avatar with status indicator -->
+                            <div class="position-relative me-4">
+                                <div class="avatar-container">
+                                    <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80' }}" 
+                                         alt="{{ current_user.username }}" 
+                                         class="avatar-img rounded-circle">
+                                    <span class="status-indicator bg-success"></span>
                                 </div>
                             </div>
-                            <!-- Action Buttons -->
-                            <div class="d-flex pt-1">
-                                <button type="button" class="btn btn-outline-primary me-1 flex-grow-1">Follow</button>
-                                <button type="button" class="btn btn-primary flex-grow-1">Message</button>
+                            
+                            <!-- User Info -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h4 class="mb-1 fw-bold text-dark">{{ current_user.username }}</h4>
+                                        <p class="mb-2 text-muted">
+                                            <i class="bi bi-envelope me-2"></i>{{ current_user.email }}
+                                        </p>
+                                        {% if current_user.bio %}
+                                        <p class="mb-3 text-muted small">{{ current_user.bio }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <!-- Edit Profile Button -->
+                                    <button class="btn btn-outline-secondary btn-sm rounded-pill">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="stat-card text-center p-3 rounded-3">
+                                <h5 class="mb-1 fw-bold text-primary">{{ current_user.posts_count or 0 }}</h5>
+                                <p class="small text-muted mb-0">Posts</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card text-center p-3 rounded-3">
+                                <h5 class="mb-1 fw-bold text-primary">{{ current_user.followers_count or 0 }}</h5>
+                                <p class="small text-muted mb-0">Followers</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card text-center p-3 rounded-3">
+                                <h5 class="mb-1 fw-bold text-primary">{{ current_user.following_count or 0 }}</h5>
+                                <p class="small text-muted mb-0">Following</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary flex-fill d-flex align-items-center justify-content-center">
+                            <i class="bi bi-chat me-2"></i>Message
+                        </button>
+                        <button class="btn btn-outline-primary flex-fill d-flex align-items-center justify-content-center">
+                            <i class="bi bi-plus-circle me-2"></i>Follow
+                        </button>
+                        <button class="btn btn-light rounded-circle d-flex align-items-center justify-content-center" 
+                                style="width: 44px; height: 44px;">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                    </div>
+
+                    <!-- Additional Info (Optional) -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>
+                                    Member
+                                </small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    {{ current_user.location or 'Online' }}
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -35,4 +99,106 @@
         </div>
     </div>
 </div>
+
+<style>
+.modern-profile-card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modern-profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+
+.profile-header {
+    position: relative;
+}
+
+.avatar-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    border: 1px solid rgba(0, 123, 255, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+    background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
+}
+
+.btn {
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    color: white;
+}
+
+.btn-light {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.btn-light:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+}
+</style>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 {% endblock %}
