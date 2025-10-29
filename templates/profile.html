@@ -1,8 +1,8 @@
 {% block title %}User Profile{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row d-flex justify-content-center">
+<div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div class="row w-100 d-flex justify-content-center">
         <div class="col col-md-9 col-lg-7 col-xl-5">
             <!-- Modern Card Design -->
             <div class="card modern-profile-card">
@@ -13,13 +13,19 @@
                             <!-- Avatar with status indicator -->
                             <div class="position-relative me-4">
                                 <div class="avatar-container">
-                                    <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80' }}" 
-                                         alt="{{ current_user.username }}" 
-                                         class="avatar-img rounded-circle">
+                                    {% if current_user.avatar_url %}
+                                        <img src="{{ current_user.avatar_url }}"
+                                             alt="{{ current_user.username }}"
+                                             class="avatar-img rounded-circle">
+                                    {% else %}
+                                        <div class="default-avatar rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-person-fill text-white"></i>
+                                        </div>
+                                    {% endif %}
                                     <span class="status-indicator bg-success"></span>
                                 </div>
                             </div>
-                            
+
                             <!-- User Info -->
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-start">
@@ -71,7 +77,7 @@
                         <button class="btn btn-outline-primary flex-fill d-flex align-items-center justify-content-center">
                             <i class="bi bi-plus-circle me-2"></i>Follow
                         </button>
-                        <button class="btn btn-light rounded-circle d-flex align-items-center justify-content-center" 
+                        <button class="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
                                 style="width: 44px; height: 44px;">
                             <i class="bi bi-three-dots"></i>
                         </button>
@@ -106,16 +112,12 @@
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     background: #ffffff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .modern-profile-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-}
-
-.profile-header {
-    position: relative;
 }
 
 .avatar-container {
@@ -132,6 +134,19 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+.default-avatar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-size: 2rem;
+}
+
+.default-avatar i {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
 .status-indicator {
     position: absolute;
     bottom: 5px;
@@ -146,13 +161,11 @@
     background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
     border: 1px solid rgba(0, 123, 255, 0.1);
     transition: all 0.3s ease;
-    cursor: pointer;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
-    background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
 }
 
 .btn {
@@ -196,6 +209,19 @@
 .btn-light:hover {
     background: #e9ecef;
     transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+    border: 1.5px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
 }
 </style>
 
