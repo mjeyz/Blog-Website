@@ -23,6 +23,11 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 1rem;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-left: 45%;
+    
+   
 }
 
 .avatar-img {
@@ -48,11 +53,14 @@
     position: absolute;
     bottom: 8px;
     right: 8px;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border: 3px solid #fff;
     border-radius: 50%;
+    background-color: #34d399;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
     animation: pulse 2s infinite;
+    will-change: transform, opacity;
 }
 
 @keyframes pulse {
@@ -69,12 +77,13 @@
 
 .user-email {
     font-size: 1rem;
-    margin-bottom: 1rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
 }
 
 .user-bio {
     max-width: 400px;
-    margin: 0 auto 1rem auto;
+    margin: 0 auto 1rem;
     line-height: 1.5;
 }
 
@@ -83,6 +92,9 @@
     background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
     border: 1px solid rgba(0, 123, 255, 0.1);
     transition: all 0.3s ease;
+    border-radius: 16px;
+    margin: 10px;
+    
 }
 
 .stat-card:hover {
@@ -97,7 +109,7 @@
     font-weight: 600;
     transition: all 0.3s ease;
     border: none;
-    margin: 8px;
+    margin-top: 90px;
 }
 
 .btn:hover {
