@@ -77,16 +77,20 @@
                     <!-- Action Buttons -->
                     <div class="actions-section mb-4">
                         <div class="row g-2 justify-content-center">
+
                             <div class="col-6">
-                                <a href="{{ url_for('message_user', user_id=current_user.id) }}"
-                                   class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-chat me-2"></i>Message
-                                </a>
-                            </div>
-                            <div class="col-6">
-                                <a href="{{ url_for('follow_user', user_id=current_user.id) }}"
+                                <!-- Use a direct URL path for follow to avoid BuildError if 'follow_user' endpoint isn't registered -->
+                                <a href="/follow/{{ current_user.id }}"
                                    class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
                                     <i class="bi bi-plus-circle me-2"></i>Follow
+                                </a>
+                            </div>
+
+                            <div class="col-6">
+                                <!-- Use a direct URL path for messaging to avoid BuildError if 'message_user' endpoint isn't registered -->
+                                <a href="/message/{{ current_user.id }}"
+                                   class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-chat-left-text me-2"></i>Message
                                 </a>
                             </div>
                         </div>
