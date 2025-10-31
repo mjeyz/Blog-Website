@@ -1,3 +1,11 @@
+
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+
 .modern-profile-card {
     border: none;
     border-radius: 24px;
