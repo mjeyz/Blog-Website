@@ -2,23 +2,18 @@
 {% block content %}
 
 <!-- Page Header -->
-<header class="masthead" style="background-image: url('../static/assets/img/home-bg.jpg')">
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7 text-center">
-        <div class="site-heading">
-          {% if current_user.first_name %}
-            <h1>{{ current_user.first_name }}'s Blog</h1>
-          {% else %}
-            <h1>Blog Theme</h1>
-          {% endif %}
-          <span class="subheading">A Blog Theme by The Software Insight</span>
+<header class="masthead" style="background-image: url('../static/assets/img/profile-bg.jpg')">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7 text-center">
+                <div class="site-heading">
+                    <h1>Your Profile</h1>
+                    <span class="subheading">A Blog Theme by The Software Insight</span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </header>
-
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -31,17 +26,18 @@
                 <div class="card-body p-5 text-center">
 
                     <!-- Avatar Section -->
-                    <div class="profile-avatar mb-4 position-relative">
-                        <div class="avatar-container mx-auto position-relative">
+                    <div class="profile-avatar text-center mb-4">
+                        <div class="avatar-container">
+
                             {% if current_user.avatar_url %}
-                                <img src="{{ current_user.avatar_url }}"
-                                     alt="{{ current_user.username or current_user.first_name }}"
-                                     class="avatar-img rounded-circle border border-3 border-light shadow">
+                            <img src="{{ current_user.avatar_url }}"
+                                 alt="{{ current_user.username or current_user.first_name }}"
+                                 class="avatar-img rounded-circle border border-3 border-light shadow">
                             {% else %}
-                                <div class="default-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-                                     style="width: 100px; height: 100px;">
-                                    <i class="bi bi-person-fill fs-1"></i>
-                                </div>
+                            <div class="default-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
+                                 style="width: 100px; height: 100px;">
+                                <i class="bi bi-person-fill fs-1"></i>
+                            </div>
                             {% endif %}
                             <span class="status-indicator position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
                                   style="width: 15px; height: 15px;"></span>
@@ -51,14 +47,15 @@
                     <!-- User Info -->
                     <div class="profile-info mb-4">
                         <h3 class="username mb-2 fw-bold">
-                            {{ current_user.username or (current_user.first_name ~ ' ' ~ current_user.last_name) or 'User' }}
+                            {{ current_user.username or (current_user.first_name ~ ' ' ~ current_user.last_name) or
+                            'User' }}
                         </h3>
                         <p class="user-email mb-3 text-muted">
                             <i class="bi bi-envelope me-2"></i> {{ current_user.email or 'No email available' }}
                         </p>
 
                         {% if current_user.bio %}
-                            <p class="user-bio text-muted small mb-3">{{ current_user.bio }}</p>
+                        <p class="user-bio text-muted small mb-3">{{ current_user.bio }}</p>
                         {% endif %}
 
                         <!-- Edit Profile Button -->

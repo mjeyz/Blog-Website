@@ -5851,6 +5851,58 @@ input[type="file"] {
 .btn-link:hover {
   color: #0a58ca;
 }
+/* Profile Card Centering Fix */
+.modern-profile-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  text-align: center;
+}
+
+/* Avatar Container */
+.avatar-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* Actual Image Styling */
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #f8f9fa;
+}
+
+/* Default Avatar (when no image) */
+.default-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #adb5bd;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Online Indicator */
+.status-indicator {
+  width: 16px;
+  height: 16px;
+  bottom: 5px;
+  right: 5px;
+  position: absolute;
+  border: 2px solid white;
+}
 
 
 @media (max-width: 575.98px) {
