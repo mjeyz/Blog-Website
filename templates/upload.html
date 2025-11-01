@@ -1,41 +1,47 @@
 {% include "header.html" %}
 {% block content %}
-<!-- Page Header -->
-<header class="masthead" style="background-image: url('../static/assets/img/home-bg.jpg')">
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7 text-center">
-        <div class="site-heading">
-            <h2>Update Your Profile Picture</h2>
-          <span class="subheading">A Blog Theme by The Software Insight</span>
-        </div>
+
+
+<!-- Optional: clean page heading (no background image) -->
+<section class="page-header text-center py-5 mb-4 mt-5">
+  <div class="container">
+    <h2 class="fw-bold mb-2">Update Your Profile Picture</h2>
+    <p class="text-muted">Keep your Insight Hub profile fresh and professional.</p>
+  </div>
+</section>
+
+<!-- Upload Card Section -->
+<div class="container d-flex align-items-center justify-content-center min-vh-70 py-5">
+  <div class="row w-100 justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+      <div class="upload-card">
+    <!-- Profile Image -->
+    {% if current_user.image_file %}
+    <img src="{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}"
+         class="profile-pic"
+         alt="">
+    {% else %}
+    <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
+         class="profile-pic"
+         alt="Profile Picture">
+    {% endif %}
+
+
+        <!-- Upload Form -->
+        <form method="POST" enctype="multipart/form-data">
+          <label for="picture" class="custom-file-label">Choose a Photo</label>
+          <input type="file" id="picture" name="picture" accept="image/*" onchange="previewImage(event)">
+
+          <div class="mt-4">
+            <button type="submit" class="btn btn-primary rounded-pill px-4">Upload</button>
+          </div>
+        </form>
+
+        <a href="{{ url_for('profile') }}" class="btn btn-link mt-3 text-decoration-none">← Back to Profile</a>
       </div>
     </div>
-  </div>
-</header>
-
-<div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
-    <div class="row w-100 d-flex justify-content-center">
-        <div class="col-md-8 col-lg-6 col-xl-5">
-
-  <div class="upload-card">
-    <!-- Show current profile image -->
-    <img src="{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}"
-         class="profile-pic" alt="Profile Picture">
-
-    <form method="POST" enctype="multipart/form-data">
-      <label for="picture" class="custom-file-label">Choose a Photo</label>
-      <input type="file" id="picture" name="picture" accept="image/*" onchange="previewImage(event)">
-
-      <div class="mt-3">
-        <button type="submit" class="btn btn-success rounded-pill px-4">Upload</button>
-      </div>
-    </form>
-
-    <a href="{{ url_for('profile') }}" class="btn btn-success btn-link mt-3">Back to Profile</a>
   </div>
 </div>
-   </div>
-    </div>
+
 {% include "footer.html" %}
 {% endblock %}

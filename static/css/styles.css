@@ -5785,6 +5785,74 @@ textarea.form-control-lg {
   --bs-offcanvas-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
+body {
+  background: linear-gradient(to bottom right, #f8f9fb, #e9ecef);
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Page header (replaces old masthead) */
+.page-header {
+  background: none;
+}
+
+/* Upload Card */
+.upload-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.upload-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Profile Picture */
+.profile-pic {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #dee2e6;
+  margin-bottom: 1rem;
+}
+
+/* File Label */
+.custom-file-label {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  background-color: #f1f3f6;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.custom-file-label:hover {
+  background-color: #e0e4ea;
+}
+
+/* File Input Hidden */
+input[type="file"] {
+  display: none;
+}
+
+/* Back Link */
+.btn-link {
+  color: #0d6efd;
+  font-weight: 500;
+}
+
+.btn-link:hover {
+  color: #0a58ca;
+}
+
+
 @media (max-width: 575.98px) {
   .offcanvas-sm {
     position: fixed;
