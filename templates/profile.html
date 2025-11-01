@@ -46,7 +46,7 @@
                         <!-- Edit Profile Button -->
                         <a href="{{ url_for('edit_profile') }}"
                            class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                            <i class="bi bi-pencil me-1"></i>Edit Profile
+                            <i class="bi bi-pencil me-1"></i> Edit Profile
                         </a>
                     </div>
 
@@ -68,7 +68,7 @@
                             <div class="col-4">
                                 <div class="stat-card text-center p-3 rounded-3 bg-light">
                                     <h5 class="mb-1 fw-bold text-primary">{{ current_user.following_count or 0 }}</h5>
-                                    <p class="small text-muted mb-0"> Following</p>
+                                    <p class="small text-muted mb-0">Following</p>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +82,7 @@
                                 <!-- Use a direct URL path for follow to avoid BuildError if 'follow_user' endpoint isn't registered -->
                                 <a href="/follow/{{ current_user.id }}"
                                    class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-plus-circle me-2 "></i>Follow
+                                    <i class="bi bi-plus-circle me-2 "></i> Follow
                                 </a>
                             </div>
 
@@ -101,7 +101,7 @@
                         <div class="row justify-content-center">
                             <div class="col-6">
                                 <small class="text-muted d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-person me-2"></i>Member
+                                    <i class="bi bi-person me-2"></i> Member
                                 </small>
                             </div>
                             <div class="col-6">
