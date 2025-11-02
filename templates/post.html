@@ -25,18 +25,19 @@
 <div class="container mt-3 px-4 px-lg-5">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert" id="flash-message-{{ loop.index }}">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <script>
-            setTimeout(function() {
-                var msg = document.getElementById('flash-message-{{ loop.index }}');
-                if (msg) { msg.style.display = 'none'; }
-            }, 5000);
-        </script>
-        {% endfor %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert"
+         id="flash-message-{{ loop.index }}">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <script>
+        setTimeout(function() {
+            var msg = document.getElementById('flash-message-{{ loop.index }}');
+            if (msg) { msg.style.display = 'none'; }
+        }, 5000);
+    </script>
+    {% endfor %}
     {% endif %}
     {% endwith %}
 </div>

@@ -7,11 +7,14 @@
     {% block styles %}
     {{ bootstrap.load_css() }}
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/favicon.ico') }}"/>
-    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
     <!-- Font Awesome JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"
+            crossorigin="anonymous"></script>
 
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet"
+          type="text/css"/>
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet"/>
     {% endblock %}
 </head>
@@ -21,7 +24,8 @@
     <div class="container px-4 px-lg-5">
         <!-- Logo -->
         <a class="navbar-brand" href="/">
-            <img src="{{ url_for('static', filename='assets/img/logo-light.jpg') }}" alt="Logo" style="width: 100px; height: auto;">
+            <img src="{{ url_for('static', filename='assets/img/logo-light.jpg') }}" alt="Logo"
+                 style="width: 100px; height: auto;">
         </a>
 
         <!-- Toggle Button -->
@@ -49,31 +53,42 @@
                 </li>
 
                 {% if not current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4"
-                           href="{{ url_for('login') }}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-lg-3 py-3 py-lg-4"
-                           href="{{ url_for('register') }}">Register</a>
-                    </li>
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3 py-3 py-lg-4"
+                       href="{{ url_for('login') }}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-lg-3 py-3 py-lg-4"
+                       href="{{ url_for('register') }}">Register</a>
+                </li>
                 {% else %}
-                    <!-- Avatar with dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle px-lg-3 py-4 py-lg-4 d-flex align-items-center" href="#" id="userDropdown"
-                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <!-- ✅ Fixed Gravatar integration -->
-                            <img src="{{ current_user.email | gravatar(size=50) }}"
-                                 alt="avatar"
-                                 width="32" height="32" class="rounded-circle me-2 border border-2">
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item"
-                                   href="{{ url_for('profile', user_id=current_user.id) }}">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
-                        </ul>
-                    </li>
+                <!-- Avatar with dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle px-lg-3 py-4 py-lg-4 d-flex align-items-center" href="#"
+                       id="userDropdown"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ current_user.email | gravatar(size=50) }}"
+                             alt="avatar"
+                             width="32" height="32" class="rounded-circle me-2 border border-2">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item"
+                               href="{{ url_for('profile', user_id=current_user.id) }}">Profile</a></li>
+
+                        {% if current_user.id == 1 %}
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li><a class="dropdown-item"
+                               href="{{ url_for('add_new_post') }}">Create New Post</a></li>
+                        {% endif %}
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </li>
                 {% endif %}
             </ul>
         </div>

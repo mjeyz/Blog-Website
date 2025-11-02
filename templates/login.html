@@ -4,51 +4,51 @@
 
 <!-- Page Header -->
 <header class="masthead" style="background-image: url('../static/assets/img/login-bg.jpg')">
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7">
-        <div class="page-heading text-center">
-          <h1>Log In</h1>
-          <span class="subheading">Welcome Back!</span>
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="page-heading text-center">
+                    <h1>Log In</h1>
+                    <span class="subheading">Welcome Back!</span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </header>
 
 <!-- Main Content -->
 <main class="mb-4">
-  <div class="container px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
 
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show text-center mt-3"
-               role="alert" id="flash-message-{{ loop.index }}">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-          <script>
-            setTimeout(function() {
-              var msg = document.getElementById('flash-message-{{ loop.index }}');
-              if (msg) { msg.style.display = 'none'; }
-            }, 5000);
-          </script>
-          {% endfor %}
-        {% endif %}
-        {% endwith %}
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show text-center mt-3"
+                     role="alert" id="flash-message-{{ loop.index }}">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <script>
+                    setTimeout(function() {
+                      var msg = document.getElementById('flash-message-{{ loop.index }}');
+                      if (msg) { msg.style.display = 'none'; }
+                    }, 5000);
+                </script>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
 
-        <!-- Login Form -->
-        <div class="mt-4">
-          {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+                <!-- Login Form -->
+                <div class="mt-4">
+                    {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+                </div>
+
+            </div>
         </div>
-
-      </div>
     </div>
-  </div>
 </main>
 
 {% include "footer.html" %}

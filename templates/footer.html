@@ -1,52 +1,54 @@
 <!-- Footer -->
 <footer class="border-top mt-5 py-4 bg-light">
-  <div class="container px-4 px-lg-5 text-center">
-    <ul class="list-inline mb-3">
+    <div class="container px-4 px-lg-5 text-center">
+        <ul class="list-inline mb-3">
             <li class="list-inline-item mx-2">
-            <a href="https://www.linkedin.com/in/mjeyz/" target="_blank" class="text-decoration-none text-dark">
+                <a href="https://www.linkedin.com/in/mjeyz/" target="_blank" class="text-decoration-none text-dark">
               <span class="fa-stack fa-lg">
               <i class="fas fa-circle fa-stack-2x"></i>
               <i class="fab fa-linkedin-in fa-stack-1x fa-inverse"></i>
               </span>
-            </a>
+                </a>
             </li>
             <li class="list-inline-item mx-2">
-            <a href="https://x.com/MudasirAbbas0" target="_blank" class="text-decoration-none text-dark">
+                <a href="https://x.com/MudasirAbbas0" target="_blank" class="text-decoration-none text-dark">
               <span class="fa-stack fa-lg">
               <i class="fas fa-circle fa-stack-2x"></i>
               <i class="fab fa-twitter-x fa-stack-1x fa-inverse"></i>
               </span>
-            </a>
+                </a>
             </li>
-          <li class="list-inline-item mx-2">
-          <a href="https://www.instagram.com/mudasirabbas0/" target="_blank" class="text-decoration-none text-dark">
+            <li class="list-inline-item mx-2">
+                <a href="https://www.instagram.com/mudasirabbas0/" target="_blank"
+                   class="text-decoration-none text-dark">
             <span class="fa-stack fa-lg">
             <i class="fas fa-circle fa-stack-2x"></i>
             <i class="fab fa-instagram fa-stack-1x fa-inverse"></i>
             </span>
-        </a>
-      </li>
-      <li class="list-inline-item mx-2">
-        <a href="https://www.facebook.com/profile.php?id=61566127081692" target="_blank" class="text-decoration-none text-dark">
+                </a>
+            </li>
+            <li class="list-inline-item mx-2">
+                <a href="https://www.facebook.com/profile.php?id=61566127081692" target="_blank"
+                   class="text-decoration-none text-dark">
           <span class="fa-stack fa-lg">
             <i class="fas fa-circle fa-stack-2x"></i>
             <i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
           </span>
-        </a>
-      </li>
-      <li class="list-inline-item mx-2">
-        <a href="https://github.com/mjeyz" target="_blank" class="text-decoration-none text-dark">
+                </a>
+            </li>
+            <li class="list-inline-item mx-2">
+                <a href="https://github.com/mjeyz" target="_blank" class="text-decoration-none text-dark">
           <span class="fa-stack fa-lg">
             <i class="fas fa-circle fa-stack-2x"></i>
             <i class="fab fa-github fa-stack-1x fa-inverse"></i>
           </span>
-        </a>
-      </li>
-    </ul>
-    <div class="small text-muted fst-italic">
-      Copyright &copy; Blog <span id="currentYear"></span>
+                </a>
+            </li>
+        </ul>
+        <div class="small text-muted fst-italic">
+            Copyright &copy; Blog <span id="currentYear"></span>
+        </div>
     </div>
-  </div>
 </footer>
 
 <!-- Bootstrap core JS -->
@@ -56,13 +58,12 @@
 <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 
 
-
 <script>
-  document.getElementById('currentYear').textContent = new Date().getFullYear();
-  // Simple hover effect for icons
-  document.querySelectorAll('.fa-stack').forEach(el => {
-    el.addEventListener('mouseenter', () => el.style.transform = 'scale(1.15)');
-    el.addEventListener('mouseleave', () => el.style.transform = 'scale(1)');
-    el.style.transition = 'transform 0.3s ease';
-  });
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    // Simple hover effect for icons
+    document.querySelectorAll('.fa-stack').forEach(el => {
+      el.addEventListener('mouseenter', () => el.style.transform = 'scale(1.15)');
+      el.addEventListener('mouseleave', () => el.style.transform = 'scale(1)');
+      el.style.transition = 'transform 0.3s ease';
+    });
 </script>
