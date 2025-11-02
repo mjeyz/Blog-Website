@@ -25,24 +25,29 @@
             <div class="card modern-profile-card shadow-lg border-0 rounded-4">
                 <div class="card-body p-5 text-center">
 
-                    <!-- Avatar Section -->
-                    <div class="profile-avatar text-center mb-4">
-                        <div class="avatar-container">
+                  <!-- Avatar Section -->
+<div class="profile-avatar text-center mb-4 position-relative">
+    <div class="avatar-container d-inline-block position-relative">
+        {% if current_user.avatar_url %}
+            <!-- User uploaded profile image -->
+            <img src="{{ url_for('static', filename='assets/profile_pics/' + current_user.avatar_url) }}"
+                 alt="{{ current_user.username or current_user.first_name }}"
+                 class="avatar-img rounded-circle border border-3 border-light shadow"
+                 style="width: 100px; height: 100px; object-fit: cover;">
+        {% else %}
+            <!-- Default profile image -->
+            <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
+                 alt="Default Avatar"
+                 class="avatar-img rounded-circle border border-3 border-light shadow"
+                 style="width: 100px; height: 100px; object-fit: cover;">
+        {% endif %}
 
-                            {% if current_user.avatar_url %}
-                            <img src="{{ current_user.avatar_url }}"
-                                 alt="{{ current_user.username or current_user.first_name }}"
-                                 class="avatar-img rounded-circle border border-3 border-light shadow">
-                            {% else %}
-                            <div class="default-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-                                 style="width: 100px; height: 100px;">
-                                <i class="bi bi-person-fill fs-1"></i>
-                            </div>
-                            {% endif %}
-                            <span class="status-indicator position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
-                                  style="width: 15px; height: 15px;"></span>
-                        </div>
-                    </div>
+        <!-- Online Status Indicator -->
+        <span class="status-indicator position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
+              style="width: 15px; height: 15px;"></span>
+    </div>
+</div>
+
 
                     <!-- User Info -->
                     <div class="profile-info mb-4">
