@@ -13,8 +13,6 @@ import smtplib
 from flask_gravatar import Gravatar
 import psycopg2
 from PIL import Image
-from werkzeug.utils import secure_filename
-
 
 
 load_dotenv()
@@ -51,7 +49,7 @@ login_manager.login_view = "login"
 gravatar = Gravatar(app,
                     size=50,
                     rating='g',
-                    default='wavatar',  # You can change to 'monsterid', 'wavatar', etc.
+                    default='wavatar',
                     force_default=False,
                     force_lower=True,
                     use_ssl=True,
