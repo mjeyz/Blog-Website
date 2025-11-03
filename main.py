@@ -439,9 +439,7 @@ def upload_image():
         file = request.files['picture']
         if file and file.filename != '':
             picture_file = save_picture(file)
-            # Example: update the current user's image
             current_user.image_file = picture_file
-            # Save this info in your user storage (if you have a file or db)
             return redirect(url_for('profile'))
     return render_template('upload.html')
 
