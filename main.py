@@ -5,7 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, sen
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date, timedelta
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
@@ -446,13 +446,15 @@ def upload_image():
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
-    if request.method == "POST":
-        current_user.username = request.form.get("username")
+    form = EditProfileForm()
+    if request.method == "POST" and form.validate_on_submit():
+        current_user.username = request.form.get("first_name")
+        current_user.last_name = request.form.get("last_name")
         current_user.bio = request.form.get("bio")
         current_user.location = request.form.get("location")
         flash("Profile updated successfully!", "success")
         return redirect(url_for("profile"))
-    return render_template("edit_profile.html", user=current_user)
+    return render_template("edit_profile.html", user=current_user, form=form)
 
 
 

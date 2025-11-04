@@ -33,3 +33,9 @@ class LoginForm(FlaskForm):
 class CommentForm(FlaskForm):
     text = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
+
+class EditProfileForm(FlaskForm):
+    first_name = StringField("First Name", validators=[DataRequired()])
+    last_name = StringField("Last Name", validators=[DataRequired(), Length(min=4, max=25)])
+    bio = CKEditorField("Bio", validators=[Length(max=500)])
+    submit = SubmitField("Update Profile")
