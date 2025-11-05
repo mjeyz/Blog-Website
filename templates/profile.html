@@ -53,25 +53,30 @@
                             <i class="bi bi-envelope me-2"></i> {{ current_user.email or 'No email available' }}
                         </p>
 
-                        {% if current_user.occupation %}
-                        <p class="text-muted small mb-1"><i class="bi bi-briefcase me-2"></i>{{ current_user.occupation }}</p>
+                        {% if current_user.profession %}
+                        <p class="text-muted small mb-1"><i class="bi bi-briefcase me-2"></i>{{ current_user.profession }}</p>
                         {% endif %}
-                        {% if current_user.education %}
-                        <p class="text-muted small mb-1"><i class="bi bi-mortarboard me-2"></i>{{ current_user.education }}</p>
-                        {% endif %}
+
                         {% if current_user.location %}
                         <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-2"></i>{{ current_user.location }}</p>
                         {% endif %}
-                        {% if current_user.skills %}
-                        <p class="text-muted small mb-3"><i class="bi bi-lightbulb me-2"></i>{{ current_user.skills }}</p>
+
+                        {% if current_user.website %}
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-globe me-2"></i>
+                            <a href="{{ current_user.website }}" target="_blank" class="text-decoration-none text-primary">
+                                {{ current_user.website }}
+                            </a>
+                        </p>
                         {% endif %}
+
                         {% if current_user.bio %}
                         <p class="user-bio text-muted small mb-3 border-top pt-2">{{ current_user.bio }}</p>
                         {% endif %}
 
                         <!-- Edit Profile Button -->
                         <a href="{{ url_for('edit_profile') }}"
-                           class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                           class="btn btn-outline-secondary btn-sm rounded-pill px-3 mt-2">
                             <i class="bi bi-pencil me-1"></i> Edit Profile
                         </a>
                     </div>
@@ -117,40 +122,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Social Links -->
-                    {% if current_user.website or current_user.github or current_user.linkedin or current_user.twitter or current_user.instagram %}
-                    <div class="social-links mt-4 border-top pt-3">
-                        <h6 class="fw-bold mb-3">🌐 Connect</h6>
-                        <div class="d-flex justify-content-center flex-wrap gap-3">
-                            {% if current_user.website %}
-                            <a href="{{ current_user.website }}" target="_blank" class="text-decoration-none text-dark">
-                                <i class="bi bi-globe fs-4"></i>
-                            </a>
-                            {% endif %}
-                            {% if current_user.github %}
-                            <a href="{{ current_user.github }}" target="_blank" class="text-dark">
-                                <i class="bi bi-github fs-4"></i>
-                            </a>
-                            {% endif %}
-                            {% if current_user.linkedin %}
-                            <a href="{{ current_user.linkedin }}" target="_blank" class="text-primary">
-                                <i class="bi bi-linkedin fs-4"></i>
-                            </a>
-                            {% endif %}
-                            {% if current_user.twitter %}
-                            <a href="{{ current_user.twitter }}" target="_blank" class="text-info">
-                                <i class="bi bi-twitter fs-4"></i>
-                            </a>
-                            {% endif %}
-                            {% if current_user.instagram %}
-                            <a href="{{ current_user.instagram }}" target="_blank" class="text-danger">
-                                <i class="bi bi-instagram fs-4"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endif %}
 
                     <!-- Additional Info -->
                     <div class="additional-info mt-4 pt-4 border-top">
