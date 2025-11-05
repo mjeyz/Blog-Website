@@ -51,6 +51,7 @@ class EditProfileForm(FlaskForm):
     # --- Professional / Personal Info ---
     occupation = StringField("Occupation", validators=[Optional(), Length(max=100)])
     skills = StringField("Skills", validators=[Optional(), Length(max=200)])  # e.g., "Python, Flask, SQL"
+    profession = StringField("Professional Title", validators=[Optional(), Length(max=100)])
     website = URLField("Website / Portfolio", validators=[Optional(), URL(), Length(max=200)])
     education = StringField("Education / Institution", validators=[Optional(), Length(max=150)])
 

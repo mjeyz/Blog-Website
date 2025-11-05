@@ -452,13 +452,16 @@ def upload_image():
 @login_required
 def edit_profile():
     form = EditProfileForm()
+
+    # Always open connection at the start
     cur = conn.cursor()
 
     if request.method == "GET":
-        # Load user data from PostgreSQL
-        cur.execute("SELECT username, first_name, last_name, email, location, profession, website, bio FROM users WHERE id = %s", (current_user.id,))
+        cur.execute("""
+            SELECT username, first_name, last_name, email, location, profession, website, bio
+            FROM users WHERE id = %s
+        """, (current_user.id,))
         user = cur.fetchone()
-
         if user:
             form.username.data = user[0]
             form.first_name.data = user[1]
@@ -469,8 +472,7 @@ def edit_profile():
             form.website.data = user[6]
             form.bio.data = user[7]
 
-    if form.validate_on_submit():
-        # Update data in PostgreSQL
+    elif form.validate_on_submit():
         cur.execute("""
             UPDATE users
             SET username = %s,
@@ -493,17 +495,17 @@ def edit_profile():
             form.bio.data,
             current_user.id
         ))
-
         conn.commit()
+        flash("Profile updated successfully!", "success")
         cur.close()
         conn.close()
-
-        flash("Profile updated successfully!", "success")
         return redirect(url_for("profile", user_id=current_user.id))
 
+    # Close only after rendering template
     cur.close()
     conn.close()
-    return render_template("edit_profile.html", form=form, user=current_user)
+    return render_template("edit_profile.html", user=current_user, form=form)
+
 
 
 

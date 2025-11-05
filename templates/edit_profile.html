@@ -94,6 +94,14 @@
                             {% endfor %}
                         </div>
 
+                        <div class="col-md-6 mb-3">
+                                {{ form.profession.label(class="form-label fw-bold") }}
+                                {{ form.profession(class="form-control", placeholder="Enter your profession") }}
+                                {% for error in form.profession.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                        </div>
+
                         <div class="mb-3">
                             {{ form.bio.label(class="form-label fw-bold") }}
                             {{ form.bio(class="form-control", placeholder="Write something about yourself") }}
