@@ -34,8 +34,50 @@ class CommentForm(FlaskForm):
     text = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, PasswordField, URLField, BooleanField, SelectField
+from wtforms.validators import DataRequired, Length, Email, Optional, URL, EqualTo
+from flask_ckeditor import CKEditorField
+
 class EditProfileForm(FlaskForm):
-    first_name = StringField("First Name", validators=[DataRequired()])
-    last_name = StringField("Last Name", validators=[DataRequired(), Length(min=4, max=25)])
-    bio = CKEditorField("Bio", validators=[Length(max=500)])
+    # --- Basic Info ---
+    first_name = StringField("First Name", validators=[DataRequired(), Length(min=2, max=25)])
+    last_name = StringField("Last Name", validators=[DataRequired(), Length(min=2, max=25)])
+    username = StringField("Username", validators=[DataRequired(), Length(min=3, max=20)])
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    bio = CKEditorField("Bio", validators=[Optional(), Length(max=500)])
+    location = StringField("Location", validators=[Optional(), Length(max=100)])
+
+    # --- Professional / Personal Info ---
+    occupation = StringField("Occupation", validators=[Optional(), Length(max=100)])
+    skills = StringField("Skills", validators=[Optional(), Length(max=200)])  # e.g., "Python, Flask, SQL"
+    website = URLField("Website / Portfolio", validators=[Optional(), URL(), Length(max=200)])
+    education = StringField("Education / Institution", validators=[Optional(), Length(max=150)])
+
+    # --- Social Links ---
+    linkedin = URLField("LinkedIn Profile", validators=[Optional(), URL(), Length(max=200)])
+    github = URLField("GitHub Profile", validators=[Optional(), URL(), Length(max=200)])
+    twitter = URLField("Twitter Profile", validators=[Optional(), URL(), Length(max=200)])
+    instagram = URLField("Instagram Profile", validators=[Optional(), URL(), Length(max=200)])
+
+    # --- Settings ---
+    visibility = SelectField(
+        "Profile Visibility",
+        choices=[("public", "Public"), ("private", "Private")],
+        validators=[DataRequired()],
+        default="public"
+    )
+    allow_notifications = BooleanField("Enable Email Notifications")
+
+    # --- Password Change (Optional Section) ---
+    new_password = PasswordField(
+        "New Password",
+        validators=[Optional(), Length(min=6, max=50)]
+    )
+    confirm_password = PasswordField(
+        "Confirm Password",
+        validators=[EqualTo("new_password", message="Passwords must match")]
+    )
+
+    # --- Submit ---
     submit = SubmitField("Update Profile")

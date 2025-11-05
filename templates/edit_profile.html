@@ -5,11 +5,10 @@
 <header class="masthead" style="background-image: url('../static/assets/img/edit_profile_bg.jpg')">
     <div class="container position-relative px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
-            <!-- Increased width -->
             <div class="col-md-12 col-lg-10 col-xl-9 text-center">
                 <div class="site-heading">
                     <h1>Edit Profile</h1>
-                    <span class="subheading">A Blog Theme by The Software Insight</span>
+                    <span class="subheading">Personalize your Software Insight experience</span>
                 </div>
             </div>
         </div>
@@ -20,38 +19,149 @@
 <main class="my-5">
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
-            <!-- Wider and centered form area -->
             <div class="col-md-12 col-lg-10 col-xl-9">
                 <div class="card shadow-lg p-4 border-0 rounded-4">
                     <h2 class="text-center mb-4">Edit Profile</h2>
+
                     <form method="POST" action="{{ url_for('edit_profile') }}">
                         {{ form.hidden_tag() }}
-                        <div class="form-group mb-3">
-                            {{ form.first_name.label(class="form-label fw-bold") }}
-                            {{ form.first_name(class="form-control", placeholder="Enter your First Name") }}
-                            {% for error in form.first_name.errors %}
+
+                        <!-- PERSONAL INFO -->
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">👤 Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.first_name.label(class="form-label fw-bold") }}
+                                {{ form.first_name(class="form-control", placeholder="Enter your First Name") }}
+                                {% for error in form.first_name.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.last_name.label(class="form-label fw-bold") }}
+                                {{ form.last_name(class="form-control", placeholder="Enter your Last Name") }}
+                                {% for error in form.last_name.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.username.label(class="form-label fw-bold") }}
+                                {{ form.username(class="form-control", placeholder="Choose a Username") }}
+                                {% for error in form.username.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form.email.label(class="form-label fw-bold") }}
+                                {{ form.email(class="form-control", placeholder="Enter your Email Address") }}
+                                {% for error in form.email.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.location.label(class="form-label fw-bold") }}
+                            {{ form.location(class="form-control", placeholder="Enter your Location") }}
+                            {% for error in form.location.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
                         </div>
 
-                        <div class="form-group mb-3">
-                            {{ form.last_name.label(class="form-label fw-bold") }}
-                            {{ form.last_name(class="form-control", placeholder="Enter your Last Name") }}
-                            {% for error in form.last_name.errors %}
+                        <div class="mb-3">
+                            {{ form.occupation.label(class="form-label fw-bold") }}
+                            {{ form.occupation(class="form-control", placeholder="Your job or profession") }}
+                            {% for error in form.occupation.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
                         </div>
 
-                        <div class="form-group mb-3">
+                        <div class="mb-3">
+                            {{ form.education.label(class="form-label fw-bold") }}
+                            {{ form.education(class="form-control", placeholder="Your school, college, or university") }}
+                            {% for error in form.education.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.skills.label(class="form-label fw-bold") }}
+                            {{ form.skills(class="form-control", placeholder="e.g. Python, Flask, SQL") }}
+                            {% for error in form.skills.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
                             {{ form.bio.label(class="form-label fw-bold") }}
-                            {{ form.bio(class="form-control", placeholder="Tell us about yourself") }}
+                            {{ form.bio(class="form-control", placeholder="Write something about yourself") }}
                             {% for error in form.bio.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
                         </div>
 
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill">
+                        <!-- SOCIAL LINKS -->
+                        <h5 class="fw-bold mb-3 mt-4 border-bottom pb-2">🌐 Social & Contact Links</h5>
+                        <div class="mb-3">
+                            {{ form.website.label(class="form-label fw-bold") }}
+                            {{ form.website(class="form-control", placeholder="Your website or portfolio URL") }}
+                            {% for error in form.website.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.linkedin.label(class="form-label fw-bold") }}
+                                {{ form.linkedin(class="form-control", placeholder="LinkedIn Profile URL") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.github.label(class="form-label fw-bold") }}
+                                {{ form.github(class="form-control", placeholder="GitHub Profile URL") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.twitter.label(class="form-label fw-bold") }}
+                                {{ form.twitter(class="form-control", placeholder="Twitter Profile URL") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.instagram.label(class="form-label fw-bold") }}
+                                {{ form.instagram(class="form-control", placeholder="Instagram Profile URL") }}
+                            </div>
+                        </div>
+
+                        <!-- SETTINGS -->
+                        <h5 class="fw-bold mb-3 mt-4 border-bottom pb-2">⚙️ Account Settings</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.visibility.label(class="form-label fw-bold") }}
+                                {{ form.visibility(class="form-select") }}
+                            </div>
+                            <div class="col-md-6 mb-3 d-flex align-items-center">
+                                <div class="form-check mt-4">
+                                    {{ form.allow_notifications(class="form-check-input") }}
+                                    {{ form.allow_notifications.label(class="form-check-label fw-bold") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PASSWORD -->
+                        <h5 class="fw-bold mb-3 mt-4 border-bottom pb-2">🔒 Change Password (optional)</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.new_password.label(class="form-label fw-bold") }}
+                                {{ form.new_password(class="form-control", placeholder="Enter new password") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.confirm_password.label(class="form-label fw-bold") }}
+                                {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                            </div>
+                        </div>
+
+                        <!-- SUBMIT -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm">
                                 Update Profile
                             </button>
                         </div>

@@ -96,10 +96,15 @@ def init_postgres_db():
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                password VARCHAR(100) NOT NULL,
-                first_name VARCHAR(100) NOT NULL,
-                last_name VARCHAR(100) NOT NULL
+                username VARCHAR(100),
+                first_name VARCHAR(100),
+                last_name VARCHAR(100),
+                email VARCHAR(150),
+                password VARCHAR(200),
+                location VARCHAR(100),
+                profession VARCHAR(100),
+                website VARCHAR(150),
+                bio TEXT
             )
         """)
         new_func(cur)
@@ -447,14 +452,59 @@ def upload_image():
 @login_required
 def edit_profile():
     form = EditProfileForm()
-    if request.method == "POST" and form.validate_on_submit():
-        current_user.username = request.form.get("first_name")
-        current_user.last_name = request.form.get("last_name")
-        current_user.bio = request.form.get("bio")
-        current_user.location = request.form.get("location")
+    cur = conn.cursor()
+
+    if request.method == "GET":
+        # Load user data from PostgreSQL
+        cur.execute("SELECT username, first_name, last_name, email, location, profession, website, bio FROM users WHERE id = %s", (current_user.id,))
+        user = cur.fetchone()
+
+        if user:
+            form.username.data = user[0]
+            form.first_name.data = user[1]
+            form.last_name.data = user[2]
+            form.email.data = user[3]
+            form.location.data = user[4]
+            form.profession.data = user[5]
+            form.website.data = user[6]
+            form.bio.data = user[7]
+
+    if form.validate_on_submit():
+        # Update data in PostgreSQL
+        cur.execute("""
+            UPDATE users
+            SET username = %s,
+                first_name = %s,
+                last_name = %s,
+                email = %s,
+                location = %s,
+                profession = %s,
+                website = %s,
+                bio = %s
+            WHERE id = %s
+        """, (
+            form.username.data,
+            form.first_name.data,
+            form.last_name.data,
+            form.email.data,
+            form.location.data,
+            form.profession.data,
+            form.website.data,
+            form.bio.data,
+            current_user.id
+        ))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
         flash("Profile updated successfully!", "success")
-        return redirect(url_for("profile"))
-    return render_template("edit_profile.html", user=current_user, form=form)
+        return redirect(url_for("profile", user_id=current_user.id))
+
+    cur.close()
+    conn.close()
+    return render_template("edit_profile.html", form=form, user=current_user)
+
 
 
 
