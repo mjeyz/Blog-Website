@@ -497,12 +497,10 @@ def edit_profile():
         ))
         conn.commit()
         flash("Profile updated successfully!", "success")
-        cur.close()
-        conn.close()
         return redirect(url_for("profile", user_id=current_user.id))
 
     # Close only after rendering template
-    cur.close()
+
     conn.close()
     return render_template("edit_profile.html", user=current_user, form=form)
 
