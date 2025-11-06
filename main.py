@@ -453,7 +453,6 @@ def upload_image():
 def edit_profile():
     form = EditProfileForm()
 
-    # Always open connection at the start
     cur = conn.cursor()
 
     if request.method == "GET":
@@ -501,7 +500,6 @@ def edit_profile():
 
 
     return render_template("edit_profile.html", user=current_user, form=form)
-
 
 
 
