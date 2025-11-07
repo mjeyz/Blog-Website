@@ -461,6 +461,7 @@ def edit_profile():
             FROM users WHERE id = %s
         """, (current_user.id,))
         user = cur.fetchone()
+
         if user:
             form.username.data = user[0]
             form.first_name.data = user[1]
@@ -494,6 +495,7 @@ def edit_profile():
             form.bio.data,
             current_user.id
         ))
+
         conn.commit()
         flash("Profile updated successfully!", "success")
         return redirect(url_for("profile", user_id=current_user.id))
