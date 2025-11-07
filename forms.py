@@ -69,16 +69,5 @@ class EditProfileForm(FlaskForm):
         default="public"
     )
     allow_notifications = BooleanField("Enable Email Notifications")
-
-    # --- Password Change (Optional Section) ---
-    new_password = PasswordField(
-        "New Password",
-        validators=[Optional(), Length(min=6, max=50)]
-    )
-    confirm_password = PasswordField(
-        "Confirm Password",
-        validators=[EqualTo("new_password", message="Passwords must match")]
-    )
-
     # --- Submit ---
     submit = SubmitField("Update Profile")

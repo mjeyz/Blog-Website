@@ -71,14 +71,36 @@ def save_picture(form_picture):
 
     return picture_fn
 
+
 class User(UserMixin):
-    def __init__(self, id, email, password, first_name, last_name, image_file="default.jpg"):
+    def __init__(
+        self,
+        id,
+        email,
+        password,
+        first_name,
+        last_name,
+        image_file="default.jpg",
+        username=None,
+        profession=None,
+        location=None,
+        website=None,
+        bio=None,
+        joined_date=None
+    ):
         self.id = id
         self.email = email
         self.password = password
         self.first_name = first_name
         self.last_name = last_name
         self.image_file = image_file
+        self.username = username
+        self.profession = profession
+        self.location = location
+        self.website = website
+        self.bio = bio or ""
+        self.profession = profession or ""
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -436,6 +458,8 @@ def contact():
 
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
+    print("Current user:", current_user)
+    print("User bio:", current_user.bio)
     return render_template("profile.html", current_user=current_user)
 
 @app.route("/upload_image", methods=['GET', 'POST'])
