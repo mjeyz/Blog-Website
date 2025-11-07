@@ -80,13 +80,13 @@ class User(UserMixin):
         password,
         first_name,
         last_name,
-        image_file="default.jpg",
         username=None,
         profession=None,
         location=None,
         website=None,
         bio=None,
-        joined_date=None
+        joined_date=None,
+        image_file="default.jpg"
     ):
         self.id = id
         self.email = email
@@ -94,23 +94,41 @@ class User(UserMixin):
         self.first_name = first_name
         self.last_name = last_name
         self.image_file = image_file
-        self.username = username
-        self.profession = profession
-        self.location = location
-        self.website = website
-        self.bio = bio or ""
+        self.username = username or ""
         self.profession = profession or ""
-
+        self.location = location or ""
+        self.website = website or ""
+        self.bio = bio or ""
+        self.joined_date = joined_date
 
 @login_manager.user_loader
 def load_user(user_id):
     with psycopg2.connect(DB_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, email, password, first_name, last_name FROM users WHERE id = %s", (user_id,))
+        cursor.execute("""
+            SELECT id, email, password, first_name, last_name,
+                   username, profession, location, website, bio
+            FROM users
+            WHERE id = %s
+        """, (user_id,))
         user = cursor.fetchone()
+
         if user:
-            return User(id=user[0], email=user[1], password=user[2], first_name=user[3], last_name=user[4])
+            return User(
+                id=user[0],
+                email=user[1],
+                password=user[2],
+                first_name=user[3],
+                last_name=user[4],
+                username=user[5],
+                profession=user[6],
+                location=user[7],
+                website=user[8],
+                bio=user[9]
+            )
     return None
+
+
 
 
 def init_postgres_db():
@@ -458,7 +476,6 @@ def contact():
 
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
-    print("Current user:", current_user)
     print("User bio:", current_user.bio)
     return render_template("profile.html", current_user=current_user)
 
