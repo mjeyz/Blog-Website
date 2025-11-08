@@ -67,3 +67,14 @@ window.addEventListener('DOMContentLoaded', () => {
       navbar.classList.remove("scrolled");
     }
   });
+
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    // Simple hover effect for icons
+    document.querySelectorAll('.fa-stack').forEach(el => {
+      el.addEventListener('mouseenter', () => el.style.transform = 'scale(1.15)');
+      el.addEventListener('mouseleave', () => el.style.transform = 'scale(1)');
+      el.style.transition = 'transform 0.3s ease';
+    });
+
+// Auto update copyright year
+document.getElementById("currentYear").textContent = new Date().getFullYear();    
