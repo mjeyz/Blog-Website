@@ -6037,24 +6037,6 @@ input[type="file"] {
   }
 }
 
-#mainNav {
-  background-color: #212529; /* dark gray */
-  position: sticky;
-  top: 0;
-  z-index: 1030;
-  transition: all 0.3s ease-in-out;
-}
-
-#mainNav .nav-link {
-  color: #f8f9fa !important;
-  transition: color 0.2s;
-}
-
-#mainNav .nav-link:hover {
-  color: #ffc107 !important;
-}
-
-
 @media (max-width: 767.98px) and (prefers-reduced-motion: reduce) {
   .offcanvas-md {
     transition: none;
