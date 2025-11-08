@@ -57,3 +57,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 toggle.innerHTML = type === 'password' ? '👁️' : '🙈';
             });
         });
+
+// Optional: script to make navbar solid when scrolling
+  window.addEventListener("scroll", function() {
+    const navbar = document.getElementById("mainNav");
+    if (window.scrollY > 50) {
+      navbar.classList.add("scrolled");
+    } else {
+      navbar.classList.remove("scrolled");
+    }
+  });

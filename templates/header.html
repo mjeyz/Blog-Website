@@ -10,155 +10,104 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/favicon.ico') }}"/>
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css"/>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet"
+          type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet"
+          type="text/css"/>
 
     <!-- Font Awesome -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"
+            crossorigin="anonymous"></script>
 
     <!-- Bootstrap CSS -->
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet"/>
 
-    <style>
-      /* Transparent Navbar Styling */
-      #mainNav {
-        background-color: transparent !important;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 1030;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      }
 
-      #mainNav.scrolled {
-        background-color: rgba(0, 0, 0, 0.8) !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      }
-
-      .navbar-nav .nav-link {
-        color: #fff !important;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05rem;
-        transition: color 0.3s ease;
-      }
-
-      .navbar-nav .nav-link:hover {
-        color: #f08fb8 !important; /* pink accent hover */
-      }
-
-      .navbar-brand span {
-        color: #fff;
-      }
-
-      .dropdown-menu {
-        background-color: rgba(30, 30, 30, 0.95);
-        border: none;
-      }
-
-      .dropdown-menu .dropdown-item {
-        color: #fff;
-      }
-
-      .dropdown-menu .dropdown-item:hover {
-        background-color: #f08fb8;
-        color: #000;
-      }
-    </style>
-    {% endblock %}
 </head>
 <body>
 
 <!-- Transparent Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark py-3" id="mainNav">
-  <div class="container px-4 px-lg-5 d-flex align-items-center justify-content-between">
+    <div class="container px-4 px-lg-5 d-flex align-items-center justify-content-between">
 
-    <!-- Logo -->
-    <a class="navbar-brand d-flex align-items-center" href="/">
-      <img src="{{ url_for('static', filename='assets/img/logo.png') }}"
-           alt="Logo"
-           style="height: 45px; width: auto; margin-right: 10px;">
-    </a>
+        <!-- Logo -->
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{{ url_for('static', filename='assets/img/logo.png') }}"
+                 alt="Logo"
+                 style="height: 45px; width: auto; margin-right: 10px;">
+        </a>
 
-    <!-- Toggle Button -->
-    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarResponsive" aria-controls="navbarResponsive"
-            aria-expanded="false" aria-label="Toggle navigation">
-      <i class="fas fa-bars"></i>
-    </button>
+        <!-- Toggle Button -->
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarResponsive" aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
 
-    <!-- Navbar Links -->
-    <div class="collapse navbar-collapse justify-content-end" id="navbarResponsive">
-      <ul class="navbar-nav align-items-center">
-        <li class="nav-item">
-          <a class="nav-link mx-2" href="{{ url_for('get_all_posts') }}">Home</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link mx-2" href="{{ url_for('about') }}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link mx-2" href="{{ url_for('contact') }}">Contact</a>
-        </li>
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse justify-content-end" id="navbarResponsive">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link mx-2" href="{{ url_for('get_all_posts') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link mx-2" href="{{ url_for('about') }}">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link mx-2" href="{{ url_for('contact') }}">Contact</a>
+                </li>
 
-        {% if not current_user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link mx-2" href="{{ url_for('login') }}">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link mx-2" href="{{ url_for('register') }}">Register</a>
-        </li>
-        {% else %}
-        <!-- Avatar dropdown -->
-        <li class="nav-item dropdown ms-3">
-          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
-             role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="{{ current_user.email | gravatar(size=40) }}"
-                 alt="avatar"
-                 class="rounded-circle border border-2 border-light me-2"
-                 width="40" height="40">
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userDropdown">
-            <li>
-              <a class="dropdown-item" href="{{ url_for('profile', user_id=current_user.id) }}">
-                <i class="bi bi-person me-2"></i>Profile
-              </a>
-            </li>
+                {% if not current_user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link mx-2" href="{{ url_for('login') }}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link mx-2" href="{{ url_for('register') }}">Register</a>
+                </li>
+                {% else %}
+                <!-- Avatar dropdown -->
+                <li class="nav-item dropdown ms-3">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ current_user.email | gravatar(size=40) }}"
+                             alt="avatar"
+                             class="rounded-circle border border-2 border-light me-2"
+                             width="40" height="40">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('profile', user_id=current_user.id) }}">
+                                <i class="bi bi-person me-2"></i>Profile
+                            </a>
+                        </li>
 
-            {% if current_user.id == 1 %}
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item" href="{{ url_for('add_new_post') }}">
-                <i class="bi bi-plus-circle me-2"></i>Create New Post
-              </a>
-            </li>
-            {% endif %}
+                        {% if current_user.id == 1 %}
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('add_new_post') }}">
+                                <i class="bi bi-plus-circle me-2"></i>Create New Post
+                            </a>
+                        </li>
+                        {% endif %}
 
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                <i class="bi bi-box-arrow-right me-2"></i>Logout
-              </a>
-            </li>
-          </ul>
-        </li>
-        {% endif %}
-      </ul>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
-  </div>
 </nav>
-
-<!-- Optional: script to make navbar solid when scrolling -->
-<script>
-  window.addEventListener("scroll", function() {
-    const navbar = document.getElementById("mainNav");
-    if (window.scrollY > 50) {
-      navbar.classList.add("scrolled");
-    } else {
-      navbar.classList.remove("scrolled");
-    }
-  });
-</script>
-
 </body>
 </html>
+{% endblock %}
+
