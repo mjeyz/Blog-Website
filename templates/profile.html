@@ -14,8 +14,8 @@
     </div>
   </div>
 </header>
-<!-- Profile Card -->
 
+<!-- Profile Card -->
 <div class="container py-5 d-flex justify-content-center align-items-center min-vh-100">
   <div class="col-md-10 col-lg-8">
     <div class="card shadow-lg border-0 rounded-4">
@@ -24,16 +24,16 @@
         <!-- Avatar -->
         <div class="mb-4 position-relative">
           <div class="d-inline-block position-relative">
-            {% if current_user.email %}
-            <img src="{{ current_user.email | gravatar(size=150) }}"
-              alt="{{ current_user.username or current_user.first_name }}"
-              class="rounded-circle border border-3 border-light shadow"
-              style="width: 130px; height: 130px; object-fit: cover;">
+            {% if user[8] %}
+              <img src="{{ url_for('static', filename='profile_pics/' ~ user[8]) }}"
+                alt="{{ user[1] }} {{ user[2] }}"
+                class="rounded-circle border border-3 border-light shadow"
+                style="width: 130px; height: 130px; object-fit: cover;">
             {% else %}
-            <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
-              alt="Default Avatar"
-              class="rounded-circle border border-3 border-light shadow"
-              style="width: 130px; height: 130px; object-fit: cover;">
+              <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
+                alt="Default Avatar"
+                class="rounded-circle border border-3 border-light shadow"
+                style="width: 130px; height: 130px; object-fit: cover;">
             {% endif %}
             <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
               style="width: 15px; height: 15px;"></span>
@@ -41,73 +41,64 @@
         </div>
 
         <!-- User Info -->
-        <h3 class="fw-bold mb-1">
-          {{ current_user.username or (current_user.first_name ~ ' ' ~ current_user.last_name) or 'User' }}
-        </h3>
+        <h3 class="fw-bold mb-1">{{ user[1] }} {{ user[2] }}</h3>
         <p class="text-muted mb-3">
-          <i class="bi bi-envelope me-2"></i>{{ current_user.email or 'No email available' }}
+          <i class="bi bi-envelope me-2"></i>{{ user[3] }}
         </p>
 
-        <!-- Profession, Location, Website neatly aligned -->
         <div class="d-flex flex-column align-items-center mb-3 text-muted small">
-          {% if current_user.profession %}
-          <div><i class="bi bi-briefcase me-2 text-primary"></i>{{ current_user.profession }}</div>
+          {% if user[6] %}
+            <div><i class="bi bi-briefcase me-2 text-primary"></i>{{ user[6] }}</div>
           {% endif %}
-          {% if current_user.location %}
-          <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ current_user.location }}</div>
+          {% if user[5] %}
+            <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ user[5] }}</div>
           {% endif %}
-          {% if current_user.website %}
-          <div>
-            <i class="bi bi-globe me-2 text-success"></i>
-            <a href="{{ current_user.website }}" target="_blank" class="text-decoration-none text-primary">
-              {{ current_user.website }}
-            </a>
-          </div>
+          {% if user[7] %}
+            <div>
+              <i class="bi bi-globe me-2 text-success"></i>
+              <a href="{{ user[7] }}" target="_blank" class="text-decoration-none text-primary">{{ user[7] }}</a>
+            </div>
           {% endif %}
         </div>
 
-        {% if current_user.bio %}
-        <p class="text-muted small mb-4 border-top pt-3">{{ current_user.bio }}</p>
+        {% if user[4] %}
+          <p class="text-muted small mb-4 border-top pt-3">{{ user[4] }}</p>
         {% endif %}
 
-        <!-- Edit Button -->
-        <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-4">
-          <i class="bi bi-pencil me-1"></i> Edit Profile
-        </a>
+        <!-- Follow / Unfollow Button -->
+        {% if current_user.id != user[0] %}
+          <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}" method="POST">
+            <button type="submit" class="btn btn-{{ 'danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4">
+              <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
+              {{ 'Unfollow' if is_user_following else 'Follow' }}
+            </button>
+          </form>
+        {% else %}
+          <!-- Only for own profile -->
+          <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-4">
+            <i class="bi bi-pencil me-1"></i> Edit Profile
+          </a>
+        {% endif %}
 
         <!-- Stats -->
         <div class="row g-3 mb-4">
           <div class="col-4">
             <div class="bg-light rounded-3 p-3">
-              <h5 class="fw-bold text-primary mb-1">{{ current_user.posts_count or 0 }}</h5>
+              <h5 class="fw-bold text-primary mb-1">{{ posts_count }}</h5>
               <p class="small text-muted mb-0">Posts</p>
             </div>
           </div>
           <div class="col-4">
             <div class="bg-light rounded-3 p-3">
-              <h5 class="fw-bold text-primary mb-1">{{ current_user.followers_count or 0 }}</h5>
+              <h5 class="fw-bold text-primary mb-1">{{ followers_count }}</h5>
               <p class="small text-muted mb-0">Followers</p>
             </div>
           </div>
           <div class="col-4">
             <div class="bg-light rounded-3 p-3">
-              <h5 class="fw-bold text-primary mb-1">{{ current_user.following_count or 0 }}</h5>
+              <h5 class="fw-bold text-primary mb-1">{{ following_count }}</h5>
               <p class="small text-muted mb-0">Following</p>
             </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="row g-2 mb-4 justify-content-center">
-          <div class="col-sm-6">
-            <a href="/follow/{{ current_user.id }}" class="btn btn-outline-primary w-100">
-              <i class="bi bi-plus-circle me-2"></i>Follow
-            </a>
-          </div>
-          <div class="col-sm-6">
-            <a href="/message/{{ current_user.id }}" class="btn btn-outline-secondary w-100">
-              <i class="bi bi-chat-left-text me-2"></i>Message
-            </a>
           </div>
         </div>
 

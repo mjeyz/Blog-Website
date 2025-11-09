@@ -160,6 +160,16 @@ def init_postgres_db():
             )
         ''')
         conn.commit()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS followers (
+                id SERIAL PRIMARY KEY,
+                follower_id INTEGER NOT NULL,
+                followed_id INTEGER NOT NULL,
+                FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (followed_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+        conn.commit()
 
 def new_func(cur):
     cur.execute("""
@@ -473,11 +483,101 @@ def contact():
 
     return render_template("contact.html", current_user=current_user)
 
+# -------------------- FOLLOW SYSTEM -------------------- #
+@app.route("/follow/<int:user_id>", methods=["POST"])
+@login_required
+def follow(user_id):
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user.id, user_id))
+    exists = cur.fetchone()
+    if not exists:
+        cur.execute("INSERT INTO followers (follower_id, followed_id) VALUES (%s, %s)", (current_user.id, user_id))
+        conn.commit()
+    cur.close()
+    conn.close()
+    flash("You are now following this user!", "success")
+    return redirect(url_for("profile", user_id=user_id))
 
-@app.route("/profile", methods=["GET", "POST"])
-def profile():
-    print("User bio:", current_user.bio)
-    return render_template("profile.html", current_user=current_user)
+
+@app.route("/unfollow/<int:user_id>", methods=["POST"])
+@login_required
+def unfollow(user_id):
+    cur = conn.cursor()
+    cur.execute("DELETE FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user.id, user_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash("You unfollowed this user.", "info")
+    return redirect(url_for("profile", user_id=user_id))
+
+
+def is_following(current_user_id, target_user_id):
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user_id, target_user_id))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    return result is not None
+
+
+def count_followers(user_id):
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
+    count = cur.fetchone()[0]
+    cur.close()
+    conn.close()
+    return count
+
+
+def count_following(user_id):
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
+    count = cur.fetchone()[0]
+    cur.close()
+    conn.close()
+    return count
+
+
+@app.route("/profile/<int:user_id>")
+@login_required
+def profile(user_id):
+    cur = conn.cursor()
+
+    # Fetch target user info
+    cur.execute("""
+        SELECT id, first_name, last_name, email, bio, location, profession, website
+        FROM users WHERE id=%s
+    """, (user_id,))
+    user = cur.fetchone()
+
+    if not user:
+        flash("User not found!", "danger")
+        return redirect(url_for("home"))
+
+    # Count posts, followers, and following
+    cur.execute("SELECT COUNT(*) FROM blog_post WHERE author_id=%s", (user_id,))
+    posts_count = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
+    followers_count = cur.fetchone()[0]
+
+    cur.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
+    following_count = cur.fetchone()[0]
+
+    # Check if the current user already follows this user
+    cur.execute("SELECT 1 FROM followers WHERE follower_id=%s AND followed_id=%s",
+                (current_user.id, user_id))
+    is_user_following = cur.fetchone() is not None
+
+    cur.close()
+    conn.close()
+
+    return render_template("profile.html",
+                           user=user,
+                           posts_count=posts_count,
+                           followers_count=followers_count,
+                           following_count=following_count,
+                           is_user_following=is_user_following)
 
 @app.route("/upload_image", methods=['GET', 'POST'])
 def upload_image():
