@@ -67,7 +67,7 @@
             {% endfor %}
 
             <!-- New Post Button -->
-            {% if current_user.is_authenticated and current_user.id == 1 %}
+            {% if current_user.is_authenticated %}
             <div class="d-flex justify-content-end mb-4">
                 <a class="btn btn-primary" href="{{ url_for('add_new_post') }}">Create New Post</a>
             </div>
