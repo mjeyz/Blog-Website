@@ -494,7 +494,6 @@ def follow(user_id):
         cur.execute("INSERT INTO followers (follower_id, followed_id) VALUES (%s, %s)", (current_user.id, user_id))
         conn.commit()
     cur.close()
-    conn.close()
     flash("You are now following this user!", "success")
     return redirect(url_for("profile", user_id=user_id))
 
@@ -506,7 +505,6 @@ def unfollow(user_id):
     cur.execute("DELETE FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user.id, user_id))
     conn.commit()
     cur.close()
-    conn.close()
     flash("You unfollowed this user.", "info")
     return redirect(url_for("profile", user_id=user_id))
 
@@ -516,7 +514,6 @@ def is_following(current_user_id, target_user_id):
     cur.execute("SELECT * FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user_id, target_user_id))
     result = cur.fetchone()
     cur.close()
-    conn.close()
     return result is not None
 
 
@@ -525,7 +522,6 @@ def count_followers(user_id):
     cur.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
     count = cur.fetchone()[0]
     cur.close()
-    conn.close()
     return count
 
 
@@ -534,7 +530,6 @@ def count_following(user_id):
     cur.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
     count = cur.fetchone()[0]
     cur.close()
-    conn.close()
     return count
 
 
@@ -570,8 +565,6 @@ def profile(user_id):
     is_user_following = cur.fetchone() is not None
 
     cur.close()
-    conn.close()
-
     return render_template("profile.html",
                            user=user,
                            posts_count=posts_count,
