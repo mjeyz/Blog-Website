@@ -36,7 +36,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             // Create toggle icon
             const toggle = document.createElement('span');
-            toggle.innerHTML = '👁️';
+            toggle.innerHTML = '<i class="fas fa-eye"></i>';
             toggle.style.position = 'absolute';
             toggle.style.right = '15px';
             toggle.style.top = '50%';
@@ -54,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
             toggle.addEventListener('click', () => {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
-                toggle.innerHTML = type === 'password' ? '👁️' : '🙈';
+                toggle.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
             });
         });
 
