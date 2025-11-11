@@ -12,7 +12,7 @@
                     <h2 class="subheading">{{ post.subtitle }}</h2>
                     <span class="meta">
                         Posted by
-                        <a href="#">{{ post.author }}</a>
+                        <a href="{{ url_for('profile', user_id=post.author_id) }}">{{ post.author }}</a>
                         on {{ post.date }}
                     </span>
                 </div>
@@ -49,6 +49,7 @@
             <div class="col-md-12 col-lg-10 col-xl-9">
                 <p>{{ post.body | safe }}</p>
 
+                <!-- Edit Post Button (Admin Only) -->
                 {% if current_user.is_authenticated and current_user.id == 1 %}
                 <div class="d-flex justify-content-end mb-4">
                     <a class="btn btn-primary" href="{{ url_for('edit_post', post_id=post.id) }}">
@@ -68,16 +69,22 @@
                     <ul class="commentList list-unstyled">
                         {% for comment in comments %}
                         <li class="d-flex align-items-start mb-3 border-bottom pb-3">
-                            <!-- Gravatar Image -->
+                            <!-- Commenter Image -->
                             <div class="commenterImage me-3">
-                                <img src="{{ comment.email | gravatar(size=50) }}"
-                                     alt="User Avatar"
-                                     class="rounded-circle border"
-                                     style="vertical-align: middle;">
+                                <a href="{{ url_for('profile', user_id=comment.user_id) }}"></a>
+                                    <img src="{{ comment.email | gravatar(size=50) }}"
+                                         alt="{{ comment.commenter_name }}'s Avatar"
+                                         class="rounded-circle border"
+                                         style="vertical-align: middle;">
+                                </a>
                             </div>
+
                             <!-- Comment Text -->
                             <div class="commentText">
-                                <strong class="text-dark fs-6 d-block">{{ comment.commenter_name }}</strong>
+                                <a href="{{ url_for('user_profile', user_id=comment.user_id) }}"
+                                   class="text-decoration-none">
+                                    <strong class="text-dark fs-6 d-block">{{ comment.commenter_name }}</strong>
+                                </a>
                                 <p class="text-muted fs-6 mb-0">{{ comment.text | safe }}</p>
                             </div>
                         </li>

@@ -1,53 +1,47 @@
 {% include "header.html" %}
 {% block content %}
 
+<!-- Upload Section -->
+<div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
+  <div class="row w-100 justify-content-center">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+      <div class="card shadow border-0 rounded-4 p-4 text-center">
 
-<!-- Page Header -->
-<header class="masthead" style="background-image: url('../static/assets/img/upload-bg.jpg')">
-    <div class="container position-relative px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-7 text-center">
-                <div class="site-heading">
-                    <h1 class="fw-semibold mb-2">Update Avatar</h1>
-                    <span class="subheading text-muted">A Blog Theme by The Software Insight</span>
-                </div>
-            </div>
+        <!-- Profile Image -->
+        <div class="d-flex justify-content-center mb-4">
+          {% if current_user.image_file %}
+            <img src="{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}"
+                 class="rounded-circle shadow-sm border border-3 border-white"
+                 alt="Profile Picture"
+                 style="width: 140px; height: 140px; object-fit: cover;">
+          {% else %}
+            <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
+                 class="rounded-circle shadow-sm border border-3 border-white"
+                 alt="Default Profile Picture"
+                 style="width: 140px; height: 140px; object-fit: cover;">
+          {% endif %}
         </div>
+
+        <!-- Upload Form -->
+        <form method="POST" enctype="multipart/form-data" class="px-2">
+          <div class="mb-3 text-start">
+            <label for="picture" class="form-label fw-semibold">Choose a New Profile Photo</label>
+            <input type="file" id="picture" name="picture" accept="image/*" class="form-control" onchange="previewImage(event)">
+          </div>
+
+          <button type="submit" class="btn btn-primary rounded-pill w-100 py-2">
+            <i class="bi bi-upload me-2"></i>Upload Photo
+          </button>
+        </form>
+
+        <!-- Back Button -->
+        <a href="{{ url_for('profile', user_id=current_user.id) }}"
+           class="btn btn-outline-secondary rounded-pill w-100 mt-3">
+          <i class="bi bi-arrow-left me-2"></i>Back to Profile
+        </a>
+      </div>
     </div>
-</header>
-
-
-<!-- Upload Card Section -->
-<div class="container d-flex align-items-center justify-content-center min-vh-70 py-5">
-    <div class="row w-100 justify-content-center">
-        <div class="col-md-8 col-lg-6 col-xl-5">
-            <div class="upload-card">
-                <!-- Profile Image -->
-                {% if current_user.image_file %}
-                <img src="{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}"
-                     class="profile-pic"
-                     alt="">
-                {% else %}
-                <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
-                     class="profile-pic"
-                     alt="Profile Picture">
-                {% endif %}
-
-
-                <!-- Upload Form -->
-                <form method="POST" enctype="multipart/form-data">
-                    <label for="picture" class="custom-file-label">Choose a Photo</label>
-                    <input type="file" id="picture" name="picture" accept="image/*" onchange="previewImage(event)">
-
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary rounded-pill px-4">Upload</button>
-                    </div>
-                </form>
-
-                <a href="{{ url_for('profile') }}" class="btn btn-link mt-3 text-decoration-none">← Back to Profile</a>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 
 {% include "footer.html" %}
