@@ -71,3 +71,22 @@ class EditProfileForm(FlaskForm):
     allow_notifications = BooleanField("Enable Email Notifications")
     # --- Submit ---
     submit = SubmitField("Update Profile")
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField("Current Password", validators=[
+        DataRequired(message="Please enter your current password.")
+    ])
+
+    new_password = PasswordField("New Password", validators=[
+        DataRequired(message="Please enter a new password."),
+        Length(min=6, message="Password must be at least 6 characters long.")
+    ])
+
+    confirm_password = PasswordField("Confirm New Password", validators=[
+        DataRequired(message="Please confirm your new password."),
+        EqualTo('new_password', message="Passwords must match.")
+    ])
+
+    submit = SubmitField("Change Password")
+

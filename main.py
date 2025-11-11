@@ -5,7 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, sen
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date, timedelta
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
@@ -640,34 +640,15 @@ def edit_profile():
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
-    if request.method == 'POST':
-        current_pwd = request.form.get('current_password')
-        new_pwd = request.form.get('new_password')
-        confirm_pwd = request.form.get('confirm_password')
-
-        # Check current password
-        if not check_password_hash(current_user.password, current_pwd):
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if not check_password_hash(current_user.password, form.current_password.data):
             flash('Current password is incorrect.', 'danger')
-            return redirect(url_for('change_password'))
-
-        # Check new password confirmation
-        if new_pwd != confirm_pwd:
-            flash('New passwords do not match.', 'warning')
-            return redirect(url_for('change_password'))
-
-        # Update password
-        hashed_pwd = generate_password_hash(new_pwd)
-        current_user.password = hashed_pwd
-
-        with psycopg2.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET password = %s WHERE id = %s", (hashed_pwd, current_user.id))
-            conn.commit()
-
-        flash('Your password has been changed successfully.', 'success')
-        return redirect(url_for('profile'))
-
-    return render_template('change_password.html')
+        else:
+            current_user.password = generate_password_hash(form.new_password.data)
+            flash('Your password has been updated successfully!', 'success')
+            return redirect(url_for('profile'))
+    return render_template('change_password.html', form=form)
 
 
 
