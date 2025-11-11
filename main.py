@@ -637,6 +637,37 @@ def edit_profile():
 
     return render_template("edit_profile.html", user=current_user, form=form)
 
+@app.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        current_pwd = request.form.get('current_password')
+        new_pwd = request.form.get('new_password')
+        confirm_pwd = request.form.get('confirm_password')
+
+        # Check current password
+        if not check_password_hash(current_user.password, current_pwd):
+            flash('Current password is incorrect.', 'danger')
+            return redirect(url_for('change_password'))
+
+        # Check new password confirmation
+        if new_pwd != confirm_pwd:
+            flash('New passwords do not match.', 'warning')
+            return redirect(url_for('change_password'))
+
+        # Update password
+        hashed_pwd = generate_password_hash(new_pwd)
+        current_user.password = hashed_pwd
+
+        with psycopg2.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET password = %s WHERE id = %s", (hashed_pwd, current_user.id))
+            conn.commit()
+
+        flash('Your password has been changed successfully.', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('change_password.html')
 
 
 
