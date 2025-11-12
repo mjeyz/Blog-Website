@@ -49,7 +49,7 @@
                     <h3 class="post-subtitle">{{ post[2] }}</h3>
                 </a>
                 <p class="post-meta">
-                    Posted by <a href="#">{{ post[5] }}</a> on {{ post[3] }}
+                    Posted by <a href="{{ url_for('profile', user_id=post[7]) }}">{{ post[5] }}</a> on {{ post[3] }}
                 </p>
 
                 <!-- Delete Post (Admin Only) -->
