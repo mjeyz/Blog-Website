@@ -306,13 +306,13 @@ def show_post(post_id):
         with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
                 
-            # Fetch the blog post details, using first_name and last_name instead of name
+            # Fetch the blog post details, including author_id
             cursor.execute('''
-                SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date, 
-                       blog_post.body, blog_post.img_url, 
+                SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date,
+                       blog_post.body, blog_post.img_url, blog_post.author_id,
                        users.first_name || ' ' || users.last_name AS author
-                FROM blog_post 
-                JOIN users ON blog_post.author_id = users.id 
+                FROM blog_post
+                JOIN users ON blog_post.author_id = users.id
                 WHERE blog_post.id = %s
             ''', (post_id,))
             post = cursor.fetchone()
@@ -328,7 +328,8 @@ def show_post(post_id):
                 "date": post[3],
                 "body": post[4],
                 "img_url": post[5],
-                "author": post[6],  
+                "author_id": post[6],
+                "author": post[7],  
             }
 
             cursor.execute('''
@@ -339,7 +340,7 @@ def show_post(post_id):
                 ORDER BY comment.id DESC
             ''', (post_id,))
             comments = cursor.fetchall()
-            comments_list = [{"text": c[0], "email": c[1], "id": c[2], "commenter_name": c[3]} for c in comments]
+            comments_list = [{"text": c[0], "email": c[1], "user_id": c[2], "commenter_name": c[3]} for c in comments]
     except Exception as e:
         flash(f"Database error: {e}", "danger")
         return redirect(url_for("get_all_posts"))
@@ -570,7 +571,8 @@ def profile(user_id):
                            posts_count=posts_count,
                            followers_count=followers_count,
                            following_count=following_count,
-                           is_user_following=is_user_following)
+                           is_user_following=is_user_following,
+                           user_id=user_id)
 
 @app.route("/upload_image", methods=['GET', 'POST'])
 def upload_image():
