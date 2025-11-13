@@ -1,127 +1,117 @@
 {% include "header.html" %}
 {% block content %}
 
-<!-- Page Header -->
-<header class="masthead" style="background-image: url('../static/assets/img/profile-bg.jpg')">
-  <div class="container position-relative px-4 px-lg-5">
-    <div class="row gx-4 gx-lg-5 justify-content-center">
-      <div class="col-md-10 col-lg-8 col-xl-7 text-center">
-        <div class="site-heading">
-          <h1>Your Profile</h1>
-          <span class="subheading">Welcome to The Software Insight Community</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</header>
 
 <!-- Profile Card -->
-<div class="container py-5 d-flex justify-content-center align-items-center min-vh-100">
-  <div class="col-md-10 col-lg-8">
-    <div class="card shadow-lg border-0 rounded-4">
-      <div class="card-body text-center p-5">
+<div class="container py-5 mt-5 d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body text-center p-5">
 
-        <!-- Avatar -->
-        <div class="mb-4 position-relative">
-          <div class="d-inline-block position-relative">
-            {% if user[8] %}
-              <img src="{{ url_for('static', filename='profile_pics/' ~ user[8]) }}"
-                   alt="{{ user[1] }} {{ user[2] }}"
-                   class="rounded-circle border border-3 border-light shadow"
-                   style="width: 130px; height: 130px; object-fit: cover;">
-            {% else %}
-              <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
-                   alt="Default Avatar"
-                   class="rounded-circle border border-3 border-light shadow"
-                   style="width: 130px; height: 130px; object-fit: cover;">
-            {% endif %}
-            <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
-                  style="width: 15px; height: 15px;"></span>
-          </div>
+                <!-- Avatar -->
+                <div class="mb-4 position-relative">
+                    <div class="d-inline-block position-relative">
+                        {% if user[8] %}
+                        <img src="{{ url_for('static', filename='profile_pics/' ~ user[8]) }}"
+                             alt="{{ user[1] }} {{ user[2] }}"
+                             class="rounded-circle border border-3 border-light shadow"
+                             style="width: 130px; height: 130px; object-fit: cover;">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
+                             alt="Default Avatar"
+                             class="rounded-circle border border-3 border-light shadow"
+                             style="width: 130px; height: 130px; object-fit: cover;">
+                        {% endif %}
+                        <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
+                              style="width: 15px; height: 15px;"></span>
+                    </div>
+                </div>
+
+                <!-- User Info -->
+                <h3 class="fw-bold mb-1">{{ user[1] }} {{ user[2] }}</h3>
+                <p class="text-muted mb-3">
+                    <i class="bi bi-envelope me-2"></i>{{ user[3] }}
+                </p>
+
+                <div class="d-flex flex-column align-items-center mb-3 text-muted small">
+                    {% if user[6] %}
+                    <div><i class="bi bi-briefcase me-2 text-primary"></i>{{ user[6] }}</div>
+                    {% endif %}
+                    {% if user[5] %}
+                    <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ user[5] }}</div>
+                    {% endif %}
+                    {% if user[7] %}
+                    <div>
+                        <i class="bi bi-globe me-2 text-success"></i>
+                        <a href="{{ user[7] }}" target="_blank" class="text-decoration-none text-primary">{{ user[7]
+                            }}</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if user[4] %}
+                <p class="text-muted small mb-4 border-top pt-3">{{ user[4] }}</p>
+                {% endif %}
+
+                <!-- Follow / Edit / Change Password Buttons -->
+                {% if current_user.id != user[0] %}
+                <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}"
+                      method="POST">
+                    <button type="submit"
+                            class="btn btn-{{ 'danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4">
+                        <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
+                        {{ 'Unfollow' if is_user_following else 'Follow' }}
+                    </button>
+                </form>
+                {% else %}
+                <!-- Only for own profile -->
+                <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                        <i class="bi bi-pencil me-1"></i> Edit Profile
+                    </a>
+                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-primary rounded-pill px-3">
+                        <i class="bi bi-key me-1"></i> Change Password
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="bg-light rounded-3 p-3">
+                            <h5 class="fw-bold text-primary mb-1">{{ posts_count }}</h5>
+                            <p class="small text-muted mb-0">Posts</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-light rounded-3 p-3">
+                            <h5 class="fw-bold text-primary mb-1">{{ followers_count }}</h5>
+                            <p class="small text-muted mb-0">Followers</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-light rounded-3 p-3">
+                            <h5 class="fw-bold text-primary mb-1">{{ following_count }}</h5>
+                            <p class="small text-muted mb-0">Following</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Info -->
+                <div class="border-top pt-3 mt-3 text-muted small">
+                    <div class="row justify-content-center">
+                        <div class="col-6">
+                            <i class="bi bi-person me-2"></i>Member of Software Insight
+                        </div>
+                        <div class="col-6">
+                            <i class="bi bi-clock me-2"></i>Joined {{ current_user.joined_date or 'Recently' }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <!-- User Info -->
-        <h3 class="fw-bold mb-1">{{ user[1] }} {{ user[2] }}</h3>
-        <p class="text-muted mb-3">
-          <i class="bi bi-envelope me-2"></i>{{ user[3] }}
-        </p>
-
-        <div class="d-flex flex-column align-items-center mb-3 text-muted small">
-          {% if user[6] %}
-            <div><i class="bi bi-briefcase me-2 text-primary"></i>{{ user[6] }}</div>
-          {% endif %}
-          {% if user[5] %}
-            <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ user[5] }}</div>
-          {% endif %}
-          {% if user[7] %}
-            <div>
-              <i class="bi bi-globe me-2 text-success"></i>
-              <a href="{{ user[7] }}" target="_blank" class="text-decoration-none text-primary">{{ user[7] }}</a>
-            </div>
-          {% endif %}
-        </div>
-
-        {% if user[4] %}
-          <p class="text-muted small mb-4 border-top pt-3">{{ user[4] }}</p>
-        {% endif %}
-
-        <!-- Follow / Edit / Change Password Buttons -->
-        {% if current_user.id != user[0] %}
-          <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}" method="POST">
-            <button type="submit" class="btn btn-{{ 'danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4">
-              <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
-              {{ 'Unfollow' if is_user_following else 'Follow' }}
-            </button>
-          </form>
-        {% else %}
-          <!-- Only for own profile -->
-          <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
-            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary rounded-pill px-3">
-              <i class="bi bi-pencil me-1"></i> Edit Profile
-            </a>
-            <a href="{{ url_for('change_password') }}" class="btn btn-outline-primary rounded-pill px-3">
-              <i class="bi bi-key me-1"></i> Change Password
-            </a>
-          </div>
-        {% endif %}
-
-        <!-- Stats -->
-        <div class="row g-3 mb-4">
-          <div class="col-4">
-            <div class="bg-light rounded-3 p-3">
-              <h5 class="fw-bold text-primary mb-1">{{ posts_count }}</h5>
-              <p class="small text-muted mb-0">Posts</p>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="bg-light rounded-3 p-3">
-              <h5 class="fw-bold text-primary mb-1">{{ followers_count }}</h5>
-              <p class="small text-muted mb-0">Followers</p>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="bg-light rounded-3 p-3">
-              <h5 class="fw-bold text-primary mb-1">{{ following_count }}</h5>
-              <p class="small text-muted mb-0">Following</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer Info -->
-        <div class="border-top pt-3 mt-3 text-muted small">
-          <div class="row justify-content-center">
-            <div class="col-6">
-              <i class="bi bi-person me-2"></i>Member of Software Insight
-            </div>
-            <div class="col-6">
-              <i class="bi bi-clock me-2"></i>Joined {{ current_user.joined_date or 'Recently' }}
-            </div>
-          </div>
-        </div>
-
-      </div>
     </div>
-  </div>
 </div>
 
 {% include "footer.html" %}
