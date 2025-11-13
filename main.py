@@ -1,5 +1,7 @@
 import os
 import secrets
+import smtplib
+import psycopg2
 from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
 from flask_bootstrap import Bootstrap5
@@ -9,9 +11,7 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProf
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
-import smtplib
 from flask_gravatar import Gravatar
-import psycopg2
 from PIL import Image
 
 
