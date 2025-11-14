@@ -7,6 +7,9 @@ from flask import Flask, render_template, redirect, url_for, request, flash, sen
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date, timedelta
+
+from werkzeug.utils import secure_filename
+
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
@@ -574,15 +577,55 @@ def profile(user_id):
                            is_user_following=is_user_following,
                            user_id=user_id)
 
-@app.route("/upload_image", methods=['GET', 'POST'])
-def upload_image():
+
+
+# Allowed image extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route('/upload-profile-pic', methods=['GET', 'POST'])
+@login_required
+def upload_profile_pic():
     if request.method == 'POST':
+        # Check if a file was submitted
+        if 'picture' not in request.files:
+            flash('No file selected.', 'danger')
+            return redirect(request.referrer or url_for('profile', user_id=current_user.id))
+
         file = request.files['picture']
-        if file and file.filename != '':
-            picture_file = save_picture(file)
-            current_user.image_file = picture_file
-            return redirect(url_for('profile'))
-    return render_template('upload.html')
+
+        # Check if the file has a filename
+        if file.filename == '':
+            flash('No file selected.', 'danger')
+            return redirect(request.referrer or url_for('profile', user_id=current_user.id))
+
+        # Validate the file
+        if file and allowed_file(file.filename):
+            # Secure the filename and create a unique name
+            filename = secure_filename(file.filename)
+            unique_filename = f"{current_user.id}_{filename}"
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+
+            # Save the file
+            file.save(file_path)
+
+            # Update the current_user object
+            current_user.image_file = unique_filename
+            # Save to JSON or file storage if needed
+
+            flash('Your profile picture has been updated!', 'success')
+            return redirect(url_for('profile', user_id=current_user.id))
+        else:
+            flash('Please upload a valid image file (PNG, JPG, JPEG, GIF).', 'danger')
+            return redirect(request.referrer or url_for('profile', user_id=current_user.id))
+
+    # GET request: render the upload template
+    return render_template('upload_profile_pic.html')  # your template file name
+
 
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required

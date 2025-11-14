@@ -1,29 +1,22 @@
 {% include "header.html" %}
 {% block content %}
 
-<!-- Upload Section -->
-<div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
-  <div class="row w-100 justify-content-center">
+<div class="container py-5 mt-5">
+  <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6 col-xl-5">
       <div class="card shadow border-0 rounded-4 p-4 text-center">
 
         <!-- Profile Image -->
         <div class="d-flex justify-content-center mb-4">
-          {% if current_user.image_file %}
-            <img src="{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}"
-                 class="rounded-circle shadow-sm border border-3 border-white"
-                 alt="Profile Picture"
-                 style="width: 140px; height: 140px; object-fit: cover;">
-          {% else %}
-            <img src="{{ url_for('static', filename='assets/img/default-profile.jpg') }}"
-                 class="rounded-circle shadow-sm border border-3 border-white"
-                 alt="Default Profile Picture"
-                 style="width: 140px; height: 140px; object-fit: cover;">
-          {% endif %}
+          <img id="profilePreview"
+               src="{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}{% else %}{{ url_for('static', filename='assets/img/default-profile.jpg') }}{% endif %}"
+               class="rounded-circle shadow-sm border border-3 border-white"
+               alt="Profile Picture"
+               style="width: 140px; height: 140px; object-fit: cover;">
         </div>
 
         <!-- Upload Form -->
-        <form method="POST" enctype="multipart/form-data" class="px-2">
+        <form method="POST" enctype="multipart/form-data" class="px-2" action="{{ url_for('upload_profile_pic') }}">
           <div class="mb-3 text-start">
             <label for="picture" class="form-label fw-semibold">Choose a New Profile Photo</label>
             <input type="file" id="picture" name="picture" accept="image/*" class="form-control" onchange="previewImage(event)">
@@ -43,6 +36,20 @@
     </div>
   </div>
 </div>
+
+<!-- JS for live image preview -->
+<script>
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      const output = document.getElementById('profilePreview');
+      output.src = reader.result;
+    }
+    if(event.target.files[0]){
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  }
+</script>
 
 {% include "footer.html" %}
 {% endblock %}
