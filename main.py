@@ -583,39 +583,51 @@ def profile(user_id):
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
 
+# Ensure upload folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_picture(form_picture):
+    """Resize and save the uploaded picture"""
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = f"{current_user.id}_{random_hex}{f_ext}"
+    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
+
+    # Resize to 200x200
+    output_size = (200, 200)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
 
 
 @app.route('/upload-profile-pic', methods=['GET', 'POST'])
 @login_required
 def upload_profile_pic():
     if request.method == 'POST':
-        # Check if a file was submitted
         if 'picture' not in request.files:
             flash('No file selected.', 'danger')
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
 
         file = request.files['picture']
 
-        # Check if the file has a filename
         if file.filename == '':
             flash('No file selected.', 'danger')
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
 
-        # Validate the file
         if file and allowed_file(file.filename):
-            # Secure the filename and create a unique name
-            filename = secure_filename(file.filename)
-            unique_filename = f"{current_user.id}_{filename}"
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            # Save and resize picture
+            filename = save_picture(file)
+            current_user.image_file = filename
 
-            # Save the file
-            file.save(file_path)
-
-            # Update the current_user object
-            current_user.image_file = unique_filename
-            # Save to JSON or file storage if needed
+            # Optionally, update the user record in your database here if needed
 
             flash('Your profile picture has been updated!', 'success')
             return redirect(url_for('profile', user_id=current_user.id))
@@ -624,7 +636,8 @@ def upload_profile_pic():
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
 
     # GET request: render the upload template
-    return render_template('upload_profile_pic.html')  # your template file name
+    return render_template('upload_profile_pic.html', current_user=current_user)
+
 
 
 @app.route("/edit-profile", methods=["GET", "POST"])
