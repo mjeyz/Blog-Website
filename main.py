@@ -705,7 +705,7 @@ def change_password():
         else:
             current_user.password = generate_password_hash(form.new_password.data)
             flash('Your password has been updated successfully!', 'success')
-            return redirect(url_for('profile'))
+            return redirect(url_for('profile', user_id=current_user.id))
     return render_template('change_password.html', form=form)
 
 
