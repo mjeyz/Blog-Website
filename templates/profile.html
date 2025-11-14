@@ -6,6 +6,20 @@
     <div class="col-md-10 col-lg-8">
         <div class="card shadow-lg border-0 rounded-4">
             <div class="card-body text-center p-5">
+                <!-- Flash Messages -->
+                <div class="container mt-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
 
                 <!-- Avatar - Fixed: Removed invalid href from div -->
                 <div class="mb-4 position-relative">
@@ -46,7 +60,7 @@
                         <a href="{{ user[7] if user[7].startswith('http') else 'https://' ~ user[7] }}"
                            target="_blank"
                            class="text-decoration-none text-primary">
-                           {{ user[7]|truncate(30) }}
+                            {{ user[7]|truncate(30) }}
                         </a>
                     </div>
                     {% endif %}
@@ -58,8 +72,10 @@
 
                 <!-- Follow / Edit / Change Password Buttons -->
                 {% if current_user.id != user[0] %}
-                <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}" method="POST">
-                    <button type="submit" class="btn btn-{{ 'outline-danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4">
+                <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}"
+                      method="POST">
+                    <button type="submit"
+                            class="btn btn-{{ 'outline-danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4">
                         <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
                         {{ 'Unfollow' if is_user_following else 'Follow' }}
                     </button>
