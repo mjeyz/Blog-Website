@@ -93,3 +93,38 @@ document.querySelectorAll('.fa-stack').forEach((el) => {
   el.addEventListener('mouseleave', () => (el.style.transform = 'scale(1)'));
   el.style.transition = 'transform 0.3s ease';
 });
+
+
+// Toggle password visibility
+document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.dataset.target;
+        const targetInput = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+
+        if (targetInput.type === "password") {
+            targetInput.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+            this.setAttribute('aria-label', 'Hide password');
+        } else {
+            targetInput.type = "password";
+            icon.classList.add("fa-eye");
+            icon.classList.remove("fa-eye-slash");
+            this.setAttribute('aria-label', 'Show password');
+        }
+
+        // Focus back on the input for better UX
+        targetInput.focus();
+    });
+});
+
+
+// Add Bootstrap validation on form submission
+document.querySelector('form').addEventListener('submit', function(event) {
+    if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    this.classList.add('was-validated');
+}, false);
