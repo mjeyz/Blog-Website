@@ -1,7 +1,7 @@
-/*! 
- * Start Bootstrap - Clean Blog v6.0.9 (https://startbootstrap.com/theme/clean-blog)
- * Copyright 2013-2023 Start Bootstrap
- * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-clean-blog/blob/master/LICENSE)
+/*!
+ * Start Bootstrap - Clean Blog v6.0.9
+ * https://startbootstrap.com/theme/clean-blog
+ * Licensed under MIT
  */
 
 // Navbar scroll behavior
@@ -28,215 +28,154 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     scrollPos = currentTop;
   });
-});
 
-// Password visibility toggle (icon appears only when user types)
-document.addEventListener('DOMContentLoaded', function () {
-  const passwordInput = document.getElementById('password');
-  if (!passwordInput) return;
-
-  // Create toggle icon (hidden by default)
-  const toggle = document.createElement('span');
-  toggle.innerHTML = '<i class="fas fa-eye"></i>';
-  toggle.style.position = 'absolute';
-  toggle.style.right = '15px';
-  toggle.style.top = '50%';
-  toggle.style.transform = 'translateY(-50%)';
-  toggle.style.cursor = 'pointer';
-  toggle.style.display = 'none'; // Hidden initially
-
-  // Wrap field for positioning
-  const wrapper = document.createElement('div');
-  wrapper.style.position = 'relative';
-  passwordInput.parentNode.insertBefore(wrapper, passwordInput);
-  wrapper.appendChild(passwordInput);
-  wrapper.appendChild(toggle);
-
-  // Show/hide icon based on input
-  passwordInput.addEventListener('input', () => {
-    if (passwordInput.value.length > 0) {
-      toggle.style.display = 'block';
+  // Make navbar solid on scroll
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 50) {
+      mainNav.classList.add('scrolled');
     } else {
-      toggle.style.display = 'none';
+      mainNav.classList.remove('scrolled');
     }
   });
 
-  // Toggle password visibility
-  toggle.addEventListener('click', () => {
-    const type =
-      passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordInput.setAttribute('type', type);
-    toggle.innerHTML =
-      type === 'password'
-        ? '<i class="fas fa-eye"></i>'
-        : '<i class="fas fa-eye-slash"></i>';
+  // Auto update copyright year
+  const yearEl = document.getElementById('currentYear');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // Hover effect for icons
+  document.querySelectorAll('.fa-stack').forEach((el) => {
+    el.addEventListener('mouseenter', () => (el.style.transform = 'scale(1.15)'));
+    el.addEventListener('mouseleave', () => (el.style.transform = 'scale(1)'));
+    el.style.transition = 'transform 0.3s ease';
   });
 });
 
-// Make navbar solid on scroll
-window.addEventListener('scroll', function () {
-  const navbar = document.getElementById('mainNav');
-  if (window.scrollY > 50) {
-    navbar.classList.add('scrolled');
-  } else {
-    navbar.classList.remove('scrolled');
-  }
-});
-
-// Auto update copyright year
-document.getElementById('currentYear').textContent =
-  new Date().getFullYear();
-
-// Hover effect for icons
-document.querySelectorAll('.fa-stack').forEach((el) => {
-  el.addEventListener('mouseenter', () => (el.style.transform = 'scale(1.15)'));
-  el.addEventListener('mouseleave', () => (el.style.transform = 'scale(1)'));
-  el.style.transition = 'transform 0.3s ease';
-});
-
-
-// Toggle password visibility
+// Password visibility toggle (for all inputs with class password-toggle)
 document.querySelectorAll('.password-toggle').forEach(button => {
-    button.addEventListener('click', function() {
-        const targetId = this.dataset.target;
-        const targetInput = document.getElementById(targetId);
-        const icon = this.querySelector('i');
+  button.addEventListener('click', function() {
+    const targetId = this.dataset.target;
+    const targetInput = document.getElementById(targetId);
+    const icon = this.querySelector('i');
 
-        if (targetInput.type === "password") {
-            targetInput.type = "text";
-            icon.classList.remove("fa-eye");
-            icon.classList.add("fa-eye-slash");
-            this.setAttribute('aria-label', 'Hide password');
-        } else {
-            targetInput.type = "password";
-            icon.classList.add("fa-eye");
-            icon.classList.remove("fa-eye-slash");
-            this.setAttribute('aria-label', 'Show password');
-        }
-
-        // Focus back on the input for better UX
-        targetInput.focus();
-    });
+    if (targetInput.type === "password") {
+      targetInput.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+      this.setAttribute('aria-label', 'Hide password');
+    } else {
+      targetInput.type = "password";
+      icon.classList.add("fa-eye");
+      icon.classList.remove("fa-eye-slash");
+      this.setAttribute('aria-label', 'Show password');
+    }
+    targetInput.focus();
+  });
 });
 
-
-// Add Bootstrap validation on form submission
-document.querySelector('form').addEventListener('submit', function(event) {
+// Bootstrap form validation
+document.querySelectorAll('form').forEach(form => {
+  form.addEventListener('submit', function(event) {
     if (!this.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
     }
     this.classList.add('was-validated');
-}, false);
+  }, false);
+});
 
+// File upload & preview
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-// Enhanced JS for file handling and camera
-  function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
-        clearFileSelection();
-        return;
-      }
-
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
-        clearFileSelection();
-        return;
-      }
-
-      // Display file info
-      document.getElementById('fileName').textContent = file.name;
-      document.getElementById('fileSize').textContent = formatFileSize(file.size);
-      document.getElementById('fileInfo').classList.remove('d-none');
-
-      // Enable upload button
-      document.getElementById('uploadBtn').disabled = false;
-
-      // Preview image
-      previewImage(event);
-    }
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
+    clearFileSelection();
+    return;
   }
 
-  function previewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function(){
-      document.getElementById('profilePreview').src = reader.result;
-    }
-    if(event.target.files[0]){
-      reader.readAsDataURL(event.target.files[0]);
-    }
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File size must be less than 5MB');
+    clearFileSelection();
+    return;
   }
 
-  function clearFileSelection() {
-    document.getElementById('picture').value = '';
-    document.getElementById('fileInfo').classList.add('d-none');
-    document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatFileSize(file.size);
+  document.getElementById('fileInfo').classList.remove('d-none');
+  document.getElementById('uploadBtn').disabled = false;
 
-    // Reset to original image
-    const originalSrc = "{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}{% else %}{{ url_for('static', filename='assets/img/default-profile.jpg') }}{% endif %}";
-    document.getElementById('profilePreview').src = originalSrc;
-  }
+  // Preview image
+  const reader = new FileReader();
+  reader.onload = function() {
+    document.getElementById('profilePreview').src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
+function clearFileSelection() {
+  const fileInput = document.getElementById('picture');
+  fileInput.value = '';
+  document.getElementById('fileInfo').classList.add('d-none');
+  document.getElementById('uploadBtn').disabled = true;
 
-  // Camera functionality for mobile devices
-  function openCamera() {
-    // Reset file input to accept camera capture
-    const fileInput = document.getElementById('picture');
-    fileInput.removeAttribute('capture'); // Remove previous capture attribute
-    fileInput.setAttribute('capture', 'environment'); // Use back camera if available
-    fileInput.setAttribute('accept', 'image/*');
+  // Reset preview image
+  const originalSrc = fileInput.dataset.originalSrc || fileInput.dataset.defaultSrc;
+  document.getElementById('profilePreview').src = originalSrc;
+}
 
-    // Trigger file input with camera preference
-    fileInput.click();
-  }
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
-  // Drag and drop functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    const profilePreview = document.getElementById('profilePreview');
-    const fileInput = document.getElementById('picture');
+// Camera input
+function openCamera() {
+  const fileInput = document.getElementById('picture');
+  fileInput.removeAttribute('capture');
+  fileInput.setAttribute('capture', 'environment');
+  fileInput.setAttribute('accept', 'image/*');
+  fileInput.click();
+}
 
-    // Drag over effect
-    profilePreview.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      this.style.transform = 'scale(1.05)';
-      this.style.transition = 'transform 0.2s ease';
-    });
+// Drag & drop and click preview
+document.addEventListener('DOMContentLoaded', function() {
+  const profilePreview = document.getElementById('profilePreview');
+  const fileInput = document.getElementById('picture');
+  if (!profilePreview || !fileInput) return;
 
-    // Drag leave effect
-    profilePreview.addEventListener('dragleave', function(e) {
-      e.preventDefault();
-      this.style.transform = 'scale(1)';
-    });
+  // Store original src
+  fileInput.dataset.originalSrc = profilePreview.src;
 
-    // Drop functionality
-    profilePreview.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.style.transform = 'scale(1)';
-
-      if (e.dataTransfer.files.length) {
-        fileInput.files = e.dataTransfer.files;
-        handleFileSelect({ target: fileInput });
-      }
-    });
-
-    // Make profile image clickable too
-    profilePreview.addEventListener('click', function() {
-      fileInput.click();
-    });
-
-    // Add hover effect to profile image
-    profilePreview.style.cursor = 'pointer';
-    profilePreview.title = 'Click to choose a photo';
+  // Drag over
+  profilePreview.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.transform = 'scale(1.05)';
+    this.style.transition = 'transform 0.2s ease';
   });
+  profilePreview.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.style.transform = 'scale(1)';
+  });
+  profilePreview.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.transform = 'scale(1)';
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      handleFileSelect({ target: fileInput });
+    }
+  });
+
+  // Click to select file
+  profilePreview.addEventListener('click', function() {
+    fileInput.click();
+  });
+
+  // Cursor and tooltip
+  profilePreview.style.cursor = 'pointer';
+  profilePreview.title = 'Click to choose a photo';
+});
