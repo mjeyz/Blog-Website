@@ -627,15 +627,11 @@ def upload_profile_pic():
             filename = save_picture(file)
             current_user.image_file = filename
 
-            # Optionally, update the user record in your database here if needed
-
             flash('Your profile picture has been updated!', 'success')
             return redirect(url_for('profile', user_id=current_user.id))
         else:
             flash('Please upload a valid image file (PNG, JPG, JPEG, GIF).', 'danger')
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
-
-    # GET request: render the upload template
     return render_template('upload_profile_pic.html', current_user=current_user)
 
 

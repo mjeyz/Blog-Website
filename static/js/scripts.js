@@ -128,3 +128,115 @@ document.querySelector('form').addEventListener('submit', function(event) {
     }
     this.classList.add('was-validated');
 }, false);
+
+
+// Enhanced JS for file handling and camera
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
+        clearFileSelection();
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        clearFileSelection();
+        return;
+      }
+
+      // Display file info
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = formatFileSize(file.size);
+      document.getElementById('fileInfo').classList.remove('d-none');
+
+      // Enable upload button
+      document.getElementById('uploadBtn').disabled = false;
+
+      // Preview image
+      previewImage(event);
+    }
+  }
+
+  function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      document.getElementById('profilePreview').src = reader.result;
+    }
+    if(event.target.files[0]){
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  }
+
+  function clearFileSelection() {
+    document.getElementById('picture').value = '';
+    document.getElementById('fileInfo').classList.add('d-none');
+    document.getElementById('uploadBtn').disabled = true;
+
+    // Reset to original image
+    const originalSrc = "{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}{% else %}{{ url_for('static', filename='assets/img/default-profile.jpg') }}{% endif %}";
+    document.getElementById('profilePreview').src = originalSrc;
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Camera functionality for mobile devices
+  function openCamera() {
+    // Reset file input to accept camera capture
+    const fileInput = document.getElementById('picture');
+    fileInput.removeAttribute('capture'); // Remove previous capture attribute
+    fileInput.setAttribute('capture', 'environment'); // Use back camera if available
+    fileInput.setAttribute('accept', 'image/*');
+
+    // Trigger file input with camera preference
+    fileInput.click();
+  }
+
+  // Drag and drop functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const profilePreview = document.getElementById('profilePreview');
+    const fileInput = document.getElementById('picture');
+
+    // Drag over effect
+    profilePreview.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      this.style.transform = 'scale(1.05)';
+      this.style.transition = 'transform 0.2s ease';
+    });
+
+    // Drag leave effect
+    profilePreview.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      this.style.transform = 'scale(1)';
+    });
+
+    // Drop functionality
+    profilePreview.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.style.transform = 'scale(1)';
+
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect({ target: fileInput });
+      }
+    });
+
+    // Make profile image clickable too
+    profilePreview.addEventListener('click', function() {
+      fileInput.click();
+    });
+
+    // Add hover effect to profile image
+    profilePreview.style.cursor = 'pointer';
+    profilePreview.title = 'Click to choose a photo';
+  });

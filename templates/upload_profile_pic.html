@@ -3,240 +3,117 @@
 
 <div class="container py-5 mt-5">
 
-  <!-- Flash messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="row justify-content-center mb-4">
+    <div class="row justify-content-center mb-4">
         <div class="col-md-8 col-lg-6 col-xl-5">
-          {% for category, message in messages %}
+            {% for category, message in messages %}
             <div class="alert alert-{{
               'success' if category=='success' else
               'danger' if category=='danger' else
               'warning' if category=='warning' else 'info'
             }} alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-          {% endfor %}
+            {% endfor %}
         </div>
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6 col-xl-5">
-      <div class="card shadow border-0 rounded-4 p-4 text-center">
-
-        <!-- Profile Image -->
-        <div class="d-flex justify-content-center mb-4">
-          <img id="profilePreview"
-               src="{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}?{{ current_user.image_file|random }}{% else %}{{ url_for('static', filename='assets/img/default-profile.jpg') }}{% endif %}"
-               class="rounded-circle shadow-sm border border-3 border-white"
-               alt="Profile Picture"
-               style="width: 140px; height: 140px; object-fit: cover;">
-        </div>
-
-        <!-- Upload Form -->
-        <form method="POST" enctype="multipart/form-data" class="px-2" action="{{ url_for('upload_profile_pic') }}">
-          <!-- Hidden file input -->
-          <input type="file" id="picture" name="picture" accept="image/*" class="d-none" onchange="handleFileSelect(event)">
-
-          <!-- Custom file upload area -->
-          <div class="mb-4">
-            <label for="picture" class="form-label fw-semibold d-block mb-3">Choose a New Profile Photo</label>
-
-            <!-- Upload trigger buttons -->
-            <div class="d-flex flex-column gap-3">
-              <!-- Computer upload button -->
-              <button type="button" class="btn btn-outline-primary rounded-3 p-3 d-flex align-items-center justify-content-center" onclick="document.getElementById('picture').click()">
-                <div class="text-start">
-                  <i class="bi bi-laptop display-6 d-block mb-2"></i>
-                  <span class="fw-semibold">Choose from Computer</span>
-                  <small class="d-block text-muted">JPG, PNG, GIF up to 5MB</small>
-                </div>
-              </button>
-
-              <!-- Mobile-friendly upload button -->
-              <button type="button" class="btn btn-outline-success rounded-3 p-3 d-flex align-items-center justify-content-center" onclick="document.getElementById('picture').click()">
-                <div class="text-start">
-                  <i class="bi bi-phone display-6 d-block mb-2"></i>
-                  <span class="fw-semibold">Choose from Mobile</span>
-                  <small class="d-block text-muted">Take photo or choose from gallery</small>
-                </div>
-              </button>
-            </div>
-
-            <!-- Selected file info -->
-            <div id="fileInfo" class="mt-3 p-3 bg-light rounded-3 d-none">
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="text-start">
-                  <i class="bi bi-image text-primary me-2"></i>
-                  <span id="fileName" class="fw-medium"></span>
-                  <small id="fileSize" class="text-muted ms-2"></small>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFileSelection()">
-                  <i class="bi bi-x"></i>
-                </button>
-              </div>
-            </div>
-
-            <!-- Camera capture for mobile -->
-            <div class="mt-3">
-              <button type="button" class="btn btn-info btn-sm rounded-pill" onclick="openCamera()">
-                <i class="bi bi-camera me-1"></i>Take Photo with Camera
-              </button>
-            </div>
-          </div>
-
-          <!-- Upload button (initially disabled) -->
-          <button type="submit" id="uploadBtn" class="btn btn-primary rounded-pill w-100 py-2" disabled>
-            <i class="bi bi-upload me-2"></i>Upload Photo
-          </button>
-        </form>
-
-        <!-- Back Button -->
-        <a href="{{ url_for('profile', user_id=current_user.id) }}"
-           class="btn btn-outline-secondary rounded-pill w-100 mt-3">
-          <i class="bi bi-arrow-left me-2"></i>Back to Profile
-        </a>
-      </div>
     </div>
-  </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+            <div class="card shadow border-0 rounded-4 p-4 text-center">
+
+                <!-- Profile Image -->
+                <div class="d-flex justify-content-center mb-4">
+                    <img id="profilePreview"
+                         src="{% if current_user.image_file %}
+                         {{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}
+                         ?{{ current_user.image_file|random }}{% else %}
+                         {{ url_for('static', filename='assets/img/default-profile.jpg') }}{% endif %}"
+
+                         class="rounded-circle shadow-sm border border-3 border-white"
+                         alt="Profile Picture"
+                         style="width: 140px; height: 140px; object-fit: cover;">
+                </div>
+
+                <!-- Upload Form -->
+                <form method="POST" enctype="multipart/form-data" class="px-2"
+                      action="{{ url_for('upload_profile_pic') }}">
+                    <!-- Hidden file input -->
+                    <input type="file" id="picture" name="picture" accept="image/*" class="d-none"
+                           onchange="handleFileSelect(event)">
+
+                    <!-- Custom file upload area -->
+                    <div class="mb-4">
+                        <label for="picture" class="form-label fw-semibold d-block mb-3">Choose a New Profile
+                            Photo</label>
+
+                        <!-- Upload trigger buttons -->
+                        <div class="d-flex flex-column gap-3">
+                            <!-- Computer upload button -->
+                            <button type="button"
+                                    class="btn btn-outline-primary rounded-3 p-3 d-flex align-items-center justify-content-center"
+                                    onclick="document.getElementById('picture').click()">
+                                <div class="text-start">
+                                    <i class="bi bi-laptop display-6 d-block mb-2"></i>
+                                    <span class="fw-semibold">Choose from Computer</span>
+                                    <small class="d-block text-muted">JPG, PNG, GIF up to 5MB</small>
+                                </div>
+                            </button>
+
+                            <!-- Mobile-friendly upload button -->
+                            <button type="button"
+                                    class="btn btn-outline-success rounded-3 p-3 d-flex align-items-center justify-content-center"
+                                    onclick="document.getElementById('picture').click()">
+                                <div class="text-start">
+                                    <i class="bi bi-phone display-6 d-block mb-2"></i>
+                                    <span class="fw-semibold">Choose from Mobile</span>
+                                    <small class="d-block text-muted">Take photo or choose from gallery</small>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Selected file info -->
+                        <div id="fileInfo" class="mt-3 p-3 bg-light rounded-3 d-none">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="text-start">
+                                    <i class="bi bi-image text-primary me-2"></i>
+                                    <span id="fileName" class="fw-medium"></span>
+                                    <small id="fileSize" class="text-muted ms-2"></small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="clearFileSelection()">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Camera capture for mobile -->
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-info btn-sm rounded-pill" onclick="openCamera()">
+                                <i class="bi bi-camera me-1"></i>Take Photo with Camera
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upload button (initially disabled) -->
+                    <button type="submit" id="uploadBtn" class="btn btn-primary rounded-pill w-100 py-2" disabled>
+                        <i class="bi bi-upload me-2"></i>Upload Photo
+                    </button>
+                </form>
+
+                <!-- Back Button -->
+                <a href="{{ url_for('profile', user_id=current_user.id) }}"
+                   class="btn btn-outline-secondary rounded-pill w-100 mt-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Profile
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
-
-<!-- Enhanced JS for file handling and camera -->
-<script>
-  function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
-        clearFileSelection();
-        return;
-      }
-
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
-        clearFileSelection();
-        return;
-      }
-
-      // Display file info
-      document.getElementById('fileName').textContent = file.name;
-      document.getElementById('fileSize').textContent = formatFileSize(file.size);
-      document.getElementById('fileInfo').classList.remove('d-none');
-
-      // Enable upload button
-      document.getElementById('uploadBtn').disabled = false;
-
-      // Preview image
-      previewImage(event);
-    }
-  }
-
-  function previewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function(){
-      document.getElementById('profilePreview').src = reader.result;
-    }
-    if(event.target.files[0]){
-      reader.readAsDataURL(event.target.files[0]);
-    }
-  }
-
-  function clearFileSelection() {
-    document.getElementById('picture').value = '';
-    document.getElementById('fileInfo').classList.add('d-none');
-    document.getElementById('uploadBtn').disabled = true;
-
-    // Reset to original image
-    const originalSrc = "{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}{% else %}{{ url_for('static', filename='assets/img/default-profile.jpg') }}{% endif %}";
-    document.getElementById('profilePreview').src = originalSrc;
-  }
-
-  function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
-  // Camera functionality for mobile devices
-  function openCamera() {
-    // Reset file input to accept camera capture
-    const fileInput = document.getElementById('picture');
-    fileInput.removeAttribute('capture'); // Remove previous capture attribute
-    fileInput.setAttribute('capture', 'environment'); // Use back camera if available
-    fileInput.setAttribute('accept', 'image/*');
-
-    // Trigger file input with camera preference
-    fileInput.click();
-  }
-
-  // Drag and drop functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    const profilePreview = document.getElementById('profilePreview');
-    const fileInput = document.getElementById('picture');
-
-    // Drag over effect
-    profilePreview.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      this.style.transform = 'scale(1.05)';
-      this.style.transition = 'transform 0.2s ease';
-    });
-
-    // Drag leave effect
-    profilePreview.addEventListener('dragleave', function(e) {
-      e.preventDefault();
-      this.style.transform = 'scale(1)';
-    });
-
-    // Drop functionality
-    profilePreview.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.style.transform = 'scale(1)';
-
-      if (e.dataTransfer.files.length) {
-        fileInput.files = e.dataTransfer.files;
-        handleFileSelect({ target: fileInput });
-      }
-    });
-
-    // Make profile image clickable too
-    profilePreview.addEventListener('click', function() {
-      fileInput.click();
-    });
-
-    // Add hover effect to profile image
-    profilePreview.style.cursor = 'pointer';
-    profilePreview.title = 'Click to choose a photo';
-  });
-</script>
-
-<style>
-  .btn-outline-primary, .btn-outline-success {
-    border-width: 2px;
-    transition: all 0.3s ease;
-  }
-
-  .btn-outline-primary:hover, .btn-outline-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
-
-  #profilePreview {
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-
-  #profilePreview:hover {
-    opacity: 0.8;
-  }
-</style>
-
 {% include "footer.html" %}
 {% endblock %}
