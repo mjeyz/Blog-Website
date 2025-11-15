@@ -10809,6 +10809,67 @@ blockquote {
     transform: translate3d(0, 100%, 0);
   }
 }
+    .profile-img {
+        border: 5px solid #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .profile-img:hover {
+        transform: scale(1.05);
+    }
+
+    .section-title {
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+    }
+
+    .skill-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .skill-tag {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .skill-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+    }
+
+    .cta-section {
+        border-left: 4px solid #007bff;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .about-content p {
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+    }
 /* Style for password toggle button */
 .password-toggle {
     border-left: 0;

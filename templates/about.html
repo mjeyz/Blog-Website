@@ -1,10 +1,7 @@
 {% include "header.html" %}
 
 <!-- Page Header -->
-<header
-        class="masthead"
-        style="background-image: url('../static/assets/img/about-bg.jpg')"
->
+<header class="masthead" style="background-image: url('../static/assets/img/about-bg.jpg')">
     <div class="container position-relative px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
@@ -22,36 +19,77 @@
     <div class="container px-4 px-lg-5">
         <div class="row gx-4 gx-lg-5 justify-content-center">
             <div class="col-md-10 col-lg-8 col-xl-7">
-                <p class="fs-5">
-                    Hi! I’m <strong>Mudasir Abbas</strong>, a <strong>BS Artificial Intelligence</strong> student at the
-                    <strong>University of Lahore</strong>, passionate about technology, coding, and innovation. I’m
-                    currently
-                    enhancing my programming skills in <strong>Python</strong> and <strong>C/C++</strong>, with a strong
-                    focus on
-                    solving real-world problems through intelligent systems.
-                </p>
+                <div class="about-content">
+                    <!-- Profile Image -->
+                    <div class="text-center mb-5">
+                        <img src="../static/assets/img/profile_img.jpg" alt="Mudasir Abbas"
+                             class="profile-img rounded-circle shadow" width="200" height="200">
+                    </div>
 
-                <p class="fs-5">
-                    I’m also working with <strong>The Software Insight</strong>, where I continue to grow my expertise
-                    in software
-                    development and learn how to turn ideas into impactful digital solutions.
-                </p>
+                    <!-- Introduction -->
+                    <p class="fs-5">
+                        Hi! I'm <strong>Mudasir Abbas</strong>, a passionate <strong>BS Artificial Intelligence</strong>
+                        student at the <strong>University of Lahore</strong>. I'm deeply fascinated by the intersection
+                        of technology, innovation, and human potential.
+                    </p>
 
-                <p class="fs-5">
-                    <strong>The Insight Hub</strong> — this blog website — is a project I built with guidance from my
-                    instructor
-                    <strong>Dr. Angela Yu</strong>. It represents my journey as a learner and developer, combining
-                    everything I’ve
-                    learned so far about web development, design, and backend logic.
-                </p>
+                    <!-- Technical Skills -->
+                    <div class="skills-section mb-4">
+                        <h3 class="section-title">Technical Expertise</h3>
+                        <p class="fs-5">
+                            I specialize in <strong>Python</strong> and <strong>C/C++</strong>, with hands-on experience
+                            in machine learning, data analysis, and backend development. My current focus is on building
+                            intelligent systems that solve real-world challenges.
+                        </p>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Python</span>
+                            <span class="skill-tag">C/C++</span>
+                            <span class="skill-tag">Machine Learning</span>
+                            <span class="skill-tag">Flask</span>
+                            <span class="skill-tag">SQL</span>
+                            <span class="skill-tag">Data Structures</span>
+                        </div>
+                    </div>
 
-                <p class="fs-5 mb-4">
-                    If you’d like to know more about my work and journey, feel free to
-                    <a href="{{ url_for('download') }}"><strong>download my resume</strong></a> and connect with me!
-                </p>
+                    <!-- Professional Experience -->
+                    <div class="experience-section mb-4">
+                        <h3 class="section-title">Professional Journey</h3>
+                        <p class="fs-5">
+                            Currently, I'm working with <strong>The Software Insight</strong>, where I'm honing my
+                            software development skills and learning to transform innovative ideas into practical,
+                            impactful digital solutions.
+                        </p>
+                    </div>
+
+                    <!-- Project Highlight -->
+                    <div class="project-section mb-4">
+                        <h3 class="section-title">About This Blog</h3>
+                        <p class="fs-5">
+                            <strong>The Insight Hub</strong> — this very blog website — is a milestone project developed
+                            under the guidance of my instructor <strong>Dr. Angela Yu</strong>. It represents my journey
+                            in web development, combining frontend design with robust backend functionality using Flask,
+                            SQLAlchemy, and modern web technologies.
+                        </p>
+                    </div>
+
+                    <!-- Call to Action -->
+                    <div class="cta-section text-center p-4 bg-light rounded">
+                        <h4 class="mb-3">Let's Connect!</h4>
+                        <p class="fs-5 mb-3">
+                            Interested in collaborating or learning more about my work?
+                        </p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="{{ url_for('download') }}" class="btn btn-primary">
+                                <i class="fas fa-download me-2"></i>Download Resume
+                            </a>
+                            <a href="{{ url_for('contact') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-envelope me-2"></i>Get In Touch
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </main>
-
 {% include "footer.html" %}
