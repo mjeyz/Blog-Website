@@ -137,4 +137,15 @@
 </div>
 
 {% include "footer.html" %}
+<script>
+    // Auto-dismiss flash messages after 3 seconds
+    setTimeout(function () {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            let alertInstance = bootstrap.Alert.getOrCreateInstance(alert);
+            alertInstance.close();
+        });
+    }, 3000); // 3000 ms = 3 seconds
+</script>
+
 {% endblock %}
