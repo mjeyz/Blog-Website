@@ -7,16 +7,12 @@ from flask import Flask, render_template, redirect, url_for, request, flash, sen
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from datetime import date, timedelta
-
-from werkzeug.utils import secure_filename
-
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from dotenv import load_dotenv
 from flask_gravatar import Gravatar
 from PIL import Image
-
 
 load_dotenv()
 
@@ -41,7 +37,6 @@ conn = psycopg2.connect(
     host="localhost",
     port="5432"
 )
-
 
 # : Configure Flask-Login
 login_manager = LoginManager()
@@ -77,19 +72,19 @@ def save_picture(form_picture):
 
 class User(UserMixin):
     def __init__(
-        self,
-        id,
-        email,
-        password,
-        first_name,
-        last_name,
-        username=None,
-        profession=None,
-        location=None,
-        website=None,
-        bio=None,
-        joined_date=None,
-        image_file="default.jpg"
+            self,
+            id,
+            email,
+            password,
+            first_name,
+            last_name,
+            username=None,
+            profession=None,
+            location=None,
+            website=None,
+            bio=None,
+            joined_date=None,
+            image_file="default.jpg"
     ):
         self.id = id
         self.email = email
@@ -103,6 +98,7 @@ class User(UserMixin):
         self.website = website or ""
         self.bio = bio or ""
         self.joined_date = joined_date
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -130,8 +126,6 @@ def load_user(user_id):
                 bio=user[9]
             )
     return None
-
-
 
 
 def init_postgres_db():
@@ -174,6 +168,7 @@ def init_postgres_db():
         """)
         conn.commit()
 
+
 def new_func(cur):
     cur.execute("""
             CREATE TABLE IF NOT EXISTS blog_post (
@@ -189,6 +184,7 @@ def new_func(cur):
             )
         """)
 
+
 init_postgres_db()
 
 
@@ -202,6 +198,7 @@ def admin_only(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
 
 # : Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET", "POST"])
@@ -236,7 +233,6 @@ def register():
             return redirect(url_for("get_all_posts"))
 
     return render_template("register.html", form=form, current_user=current_user)
-
 
 
 # : Retrieve a user from the database based on their email.
@@ -285,6 +281,7 @@ def get_all_posts():
     posts = [blog for blog in blog_post]
     return render_template("index.html", all_posts=posts, current_user=current_user, current_year=date.today().year)
 
+
 # : Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 @login_required
@@ -296,7 +293,7 @@ def show_post(post_id):
         if not current_user.is_authenticated:  # Check if the user is logged in
             flash("You must be logged in to comment.", "warning")
             return redirect(url_for("login"))  # Redirect to login page
-        
+
         with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO comment (text, author_id, post_id) VALUES (%s, %s, %s)",
@@ -308,7 +305,7 @@ def show_post(post_id):
     try:
         with psycopg2.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-                
+
             # Fetch the blog post details, including author_id
             cursor.execute('''
                 SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date,
@@ -332,7 +329,7 @@ def show_post(post_id):
                 "body": post[4],
                 "img_url": post[5],
                 "author_id": post[6],
-                "author": post[7],  
+                "author": post[7],
             }
 
             cursor.execute('''
@@ -349,7 +346,6 @@ def show_post(post_id):
         return redirect(url_for("get_all_posts"))
 
     return render_template("post.html", post=post_data, comments=comments_list, current_user=current_user, form=form)
-
 
 
 # : Use a decorator so only an admin user can create a new post
@@ -437,9 +433,11 @@ def delete_post(post_id):
         flash("Post deleted successfully!", "success")
         return redirect(url_for("get_all_posts"))
 
+
 @app.route("/about")
 def about():
     return render_template("about.html", current_user=current_user)
+
 
 @app.route("/download", methods=["GET", "POST"])
 def download():
@@ -468,13 +466,13 @@ def contact():
                     connection.starttls()
                     connection.login(user=smtp_email, password=smtp_password)
                     connection.sendmail(from_addr=email,
-                                            to_addrs=smtp_email,
-                                            msg=f"subject:User Alert\n\n"
-                                                f"Name: {name}\n"
-                                                f"Email: {email}\n"
-                                                f"Phone: {phone}\n"
-                                                f"Message: {message}\n"
-                                                f"Now it's time to contect him")
+                                        to_addrs=smtp_email,
+                                        msg=f"subject:User Alert\n\n"
+                                            f"Name: {name}\n"
+                                            f"Email: {email}\n"
+                                            f"Phone: {phone}\n"
+                                            f"Message: {message}\n"
+                                            f"Now it's time to contect him")
                 except smtplib.SMTPException as e:
                     print(f"Smtp Error: {e}")
                 else:
@@ -484,8 +482,8 @@ def contact():
                     if connection:
                         connection.close()
 
-
     return render_template("contact.html", current_user=current_user)
+
 
 # -------------------- FOLLOW SYSTEM -------------------- #
 @app.route("/follow/<int:user_id>", methods=["POST"])
@@ -578,7 +576,6 @@ def profile(user_id):
                            user_id=user_id)
 
 
-
 # Allowed image extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
@@ -593,7 +590,6 @@ def allowed_file(filename):
 
 
 def save_picture(form_picture):
-    """Resize and save the uploaded picture"""
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = f"{current_user.id}_{random_hex}{f_ext}"
@@ -633,7 +629,6 @@ def upload_profile_pic():
             flash('Please upload a valid image file (PNG, JPG, JPEG, GIF).', 'danger')
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
     return render_template('upload_profile_pic.html', current_user=current_user)
-
 
 
 @app.route("/edit-profile", methods=["GET", "POST"])
@@ -688,8 +683,8 @@ def edit_profile():
         flash("Profile updated successfully!", "success")
         return redirect(url_for("profile", user_id=current_user.id))
 
-
     return render_template("edit_profile.html", user=current_user, form=form)
+
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
@@ -703,7 +698,6 @@ def change_password():
             flash('Your password has been updated successfully!', 'success')
             return redirect(url_for('profile', user_id=current_user.id))
     return render_template('change_password.html', form=form)
-
 
 
 if __name__ == "__main__":
