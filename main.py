@@ -167,6 +167,26 @@ def init_postgres_db():
             )
         """)
         conn.commit()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS user_info (
+                Skill Text,
+                Experience Text,
+                Education Text,
+                Occupation Text,
+                Location Text,
+                Website Text,
+                LinkedIn Text,
+                GitHub Text,
+                Twitter Text,
+                Facebook Text,
+                Instagram Text,
+                profile_image TEXT,
+                profile_visibility BOOLEAN DEFAULT TRUE,
+                user_id INTEGER UNIQUE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+                """)
+        conn.commit()
 
 
 def new_func(cur):
