@@ -651,7 +651,6 @@ def upload_profile_pic():
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
     return render_template('upload_profile_pic.html', current_user=current_user)
 
-
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
@@ -660,52 +659,108 @@ def edit_profile():
     cur = conn.cursor()
 
     if request.method == "GET":
+        # Get basic user info from users table
         cur.execute("""
-            SELECT username, first_name, last_name, email, location, profession, website, bio
+            SELECT username, first_name, last_name, email
             FROM users WHERE id = %s
         """, (current_user.id,))
         user = cur.fetchone()
+
+        # Get extended profile info from user_info table
+        cur.execute("""
+            SELECT Skill, Experience, Education, Occupation, Location, Website, 
+                   LinkedIn, GitHub, Twitter, Facebook, Instagram, profile_image, profile_visibility
+            FROM user_info WHERE user_id = %s
+        """, (current_user.id,))
+        user_info = cur.fetchone()
 
         if user:
             form.username.data = user[0]
             form.first_name.data = user[1]
             form.last_name.data = user[2]
             form.email.data = user[3]
-            form.location.data = user[4]
-            form.profession.data = user[5]
-            form.website.data = user[6]
-            form.bio.data = user[7]
+
+        if user_info:
+            form.skill.data = user_info[0]
+            form.experience.data = user_info[1]
+            form.education.data = user_info[2]
+            form.occupation.data = user_info[3]
+            form.location.data = user_info[4]
+            form.website.data = user_info[5]
+            form.linkedin.data = user_info[6]
+            form.github.data = user_info[7]
+            form.twitter.data = user_info[8]
+            form.facebook.data = user_info[9]
+            form.instagram.data = user_info[10]
+            form.profile_image.data = user_info[11]
+            form.profile_visibility.data = user_info[12]
 
     elif form.validate_on_submit():
-        cur.execute("""
-            UPDATE users
-            SET username = %s,
-                first_name = %s,
-                last_name = %s,
-                email = %s,
-                location = %s,
-                profession = %s,
-                website = %s,
-                bio = %s
-            WHERE id = %s
-        """, (
-            form.username.data,
-            form.first_name.data,
-            form.last_name.data,
-            form.email.data,
-            form.location.data,
-            form.profession.data,
-            form.website.data,
-            form.bio.data,
-            current_user.id
-        ))
+        try:
+            # Update basic user info in users table
+            cur.execute("""
+                UPDATE users
+                SET username = %s,
+                    first_name = %s,
+                    last_name = %s,
+                    email = %s
+                WHERE id = %s
+            """, (
+                form.username.data,
+                form.first_name.data,
+                form.last_name.data,
+                form.email.data,
+                current_user.id
+            ))
 
-        conn.commit()
-        flash("Profile updated successfully!", "success")
-        return redirect(url_for("profile", user_id=current_user.id))
+            # Update or insert extended profile info in user_info table
+            cur.execute("""
+                INSERT INTO user_info (
+                    Skill, Experience, Education, Occupation, Location, Website,
+                    LinkedIn, GitHub, Twitter, Facebook, Instagram, profile_image, 
+                    profile_visibility, user_id
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (user_id) 
+                DO UPDATE SET
+                    Skill = EXCLUDED.Skill,
+                    Experience = EXCLUDED.Experience,
+                    Education = EXCLUDED.Education,
+                    Occupation = EXCLUDED.Occupation,
+                    Location = EXCLUDED.Location,
+                    Website = EXCLUDED.Website,
+                    LinkedIn = EXCLUDED.LinkedIn,
+                    GitHub = EXCLUDED.GitHub,
+                    Twitter = EXCLUDED.Twitter,
+                    Facebook = EXCLUDED.Facebook,
+                    Instagram = EXCLUDED.Instagram,
+                    profile_image = EXCLUDED.profile_image,
+                    profile_visibility = EXCLUDED.profile_visibility
+            """, (
+                form.skill.data,
+                form.experience.data,
+                form.education.data,
+                form.occupation.data,
+                form.location.data,
+                form.website.data,
+                form.linkedin.data,
+                form.github.data,
+                form.twitter.data,
+                form.facebook.data,
+                form.instagram.data,
+                form.profile_image.data,
+                form.profile_visibility.data,
+                current_user.id
+            ))
+
+            conn.commit()
+            flash("Profile updated successfully!", "success")
+            return redirect(url_for("profile", user_id=current_user.id))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error updating profile: {str(e)}", "error")
 
     return render_template("edit_profile.html", user=current_user, form=form)
-
 
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
