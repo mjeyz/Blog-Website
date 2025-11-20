@@ -82,9 +82,19 @@ class User(UserMixin):
             profession=None,
             location=None,
             website=None,
+            linkedin=None,
+            github=None,
+            twitter=None,
+            facebook=None,
+            instagram=None,
             bio=None,
             joined_date=None,
-            image_file="default.jpg"
+            image_file="default.jpg",
+            skill=None,
+            experience=None,
+            education=None,
+            occupation=None,
+
     ):
         self.id = id
         self.email = email
@@ -98,6 +108,15 @@ class User(UserMixin):
         self.website = website or ""
         self.bio = bio or ""
         self.joined_date = joined_date
+        self.linkedin = linkedin or ""
+        self.github = github or ""
+        self.twitter = twitter or ""
+        self.facebook = facebook or ""
+        self.instagram = instagram or ""
+        self.skill = skill or ""
+        self.experience = experience or ""
+        self.education = education or ""
+        self.occupation = occupation or ""
 
 
 @login_manager.user_loader
@@ -548,13 +567,12 @@ def count_following(user_id):
     cur.close()
     return count
 
-
 @app.route("/profile/<int:user_id>")
 @login_required
 def profile(user_id):
     cur = conn.cursor()
 
-    # Fetch target user info
+    # Fetch target user info - include profile_pic if it exists in users table
     cur.execute("""
         SELECT id, first_name, last_name, email, username
         FROM users WHERE id=%s
@@ -564,6 +582,14 @@ def profile(user_id):
     if not user:
         flash("User not found!", "danger")
         return redirect(url_for("home"))
+
+    # Fetch user_info data
+    cur.execute("""
+        SELECT Skill, Experience, Education, Occupation, Location,
+               Website, LinkedIn, GitHub, Twitter, Facebook, Instagram, bio
+        FROM user_info WHERE user_id=%s
+    """, (user_id,))
+    user_info = cur.fetchone()
 
     # Count posts, followers, and following
     cur.execute("SELECT COUNT(*) FROM blog_post WHERE author_id=%s", (user_id,))
@@ -583,39 +609,12 @@ def profile(user_id):
     cur.close()
     return render_template("profile.html",
                            user=user,
+                           user_info=user_info,  # Pass the raw user_info tuple
                            posts_count=posts_count,
                            followers_count=followers_count,
                            following_count=following_count,
                            is_user_following=is_user_following,
                            user_id=user_id)
-
-
-# Allowed image extensions
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
-
-# Ensure upload folder exists
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = f"{current_user.id}_{random_hex}{f_ext}"
-    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
-
-    # Resize to 200x200
-    output_size = (200, 200)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
-
-    return picture_fn
 
 
 @app.route('/upload-profile-pic', methods=['GET', 'POST'])
