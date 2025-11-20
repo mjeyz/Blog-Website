@@ -26,7 +26,7 @@
                                 src="{% if user[5] %}
                                 {{ url_for('static', filename='profile_pics/' ~ user[5]) }}
                                 {% else %}
-                                {{ user[3] | gravatar(size=130) }}
+                                {{ user[3] | gravatar }}
                                 {% endif %}"
                                 alt="{{ user[1] }} {{ user[2] }}"
                                 class="rounded-circle border border-3 border-light shadow"
@@ -47,31 +47,137 @@
 
                 <!-- User Info -->
                 <h3 class="fw-bold mb-1">{{ user[1] }} {{ user[2] }}</h3>
-                <p class="text-muted mb-3">
+                <p class="text-muted mb-4">
                     <i class="bi bi-envelope me-2"></i>{{ user[3] }}
                 </p>
 
-                <div class="d-flex flex-column align-items-center mb-3 text-muted small">
-                    {% if user_info and user_info[3] %}  <!-- Occupation from user_info -->
-                    <div><i class="bi bi-briefcase me-2 text-primary"></i>{{ user_info[3] }}</div>
-                    {% endif %}
-                    {% if user_info and user_info[4] %}  <!-- Location from user_info -->
-                    <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ user_info[4] }}</div>
-                    {% endif %}
-                    {% if user_info and user_info[5] %}  <!-- Website from user_info -->
-                    <div>
-                        <i class="bi bi-globe me-2 text-success"></i>
-                        <a href="{{ user_info[5] if user_info[5].startswith('http') else 'https://' ~ user_info[5] }}"
-                           target="_blank"
-                           class="text-decoration-none text-primary">
-                            {{ user_info[5]|truncate(30) }}
-                        </a>
+                <!-- Enhanced Occupation, Location, Website Section -->
+                <div class="enhanced-info-section mb-4">
+                    <div class="row g-3 justify-content-center">
+                        {% if user_info and user_info[3] %}  <!-- Occupation -->
+                        <div class="col-auto">
+                            <div class="info-card bg-primary bg-opacity-10 rounded-4 p-3 text-center">
+                                <i class="bi bi-briefcase-fill text-primary fs-5 mb-2"></i>
+                                <h6 class="fw-bold text-dark mb-1">Occupation</h6>
+                                <p class="small text-muted mb-0">{{ user_info[3] }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_info and user_info[4] %}  <!-- Location -->
+                        <div class="col-auto">
+                            <div class="info-card bg-danger bg-opacity-10 rounded-4 p-3 text-center">
+                                <i class="bi bi-geo-alt-fill text-danger fs-5 mb-2"></i>
+                                <h6 class="fw-bold text-dark mb-1">Location</h6>
+                                <p class="small text-muted mb-0">{{ user_info[4] }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_info and user_info[5] %}  <!-- Website -->
+                        <div class="col-auto">
+                            <div class="info-card bg-success bg-opacity-10 rounded-4 p-3 text-center">
+                                <i class="bi bi-globe text-success fs-5 mb-2"></i>
+                                <h6 class="fw-bold text-dark mb-1">Website</h6>
+                                <a href="{{ user_info[5] if user_info[5].startswith('http') else 'https://' ~ user_info[5] }}"
+                                   target="_blank"
+                                   class="small text-decoration-none text-primary d-block">
+                                    {{ user_info[5]|replace('https://', '')|replace('http://', '')|truncate(20) }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
 
+                <!-- Additional Info Section -->
+                <div class="additional-info mb-4">
+                    <!-- Skills, Experience, Education in a grid -->
+                    <div class="row g-3 mb-3">
+                        {% if user_info and user_info[0] %}  <!-- Skills -->
+                        <div class="col-md-4">
+                            <div class="bg-light rounded-4 p-3 h-100">
+                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-tools me-2"></i>Skills</h6>
+                                <p class="small text-muted mb-0">{{ user_info[0] }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_info and user_info[1] %}  <!-- Experience -->
+                        <div class="col-md-4">
+                            <div class="bg-light rounded-4 p-3 h-100">
+                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-award me-2"></i>Experience</h6>
+                                <p class="small text-muted mb-0">{{ user_info[1] }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if user_info and user_info[2] %}  <!-- Education -->
+                        <div class="col-md-4">
+                            <div class="bg-light rounded-4 p-3 h-100">
+                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-mortarboard me-2"></i>Education</h6>
+                                <p class="small text-muted mb-0">{{ user_info[2] }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Social Links -->
+                {% if user_info and (user_info[6] or user_info[7] or user_info[8] or user_info[9] or user_info[10]) %}
+                <div class="social-links mb-4">
+                    <h6 class="fw-bold mb-3 text-muted">Connect with me</h6>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        {% if user_info[6] %}  <!-- LinkedIn -->
+                        <a href="{{ user_info[6] if user_info[6].startswith('http') else 'https://' ~ user_info[6] }}"
+                           target="_blank"
+                           class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center">
+                            <i class="bi bi-linkedin me-1"></i> LinkedIn
+                        </a>
+                        {% endif %}
+
+                        {% if user_info[7] %}  <!-- GitHub -->
+                        <a href="{{ user_info[7] if user_info[7].startswith('http') else 'https://' ~ user_info[7] }}"
+                           target="_blank"
+                           class="btn btn-outline-dark btn-sm rounded-pill d-flex align-items-center">
+                            <i class="bi bi-github me-1"></i> GitHub
+                        </a>
+                        {% endif %}
+
+                        {% if user_info[8] %}  <!-- Twitter -->
+                        <a href="{{ user_info[8] if user_info[8].startswith('http') else 'https://' ~ user_info[8] }}"
+                           target="_blank"
+                           class="btn btn-outline-info btn-sm rounded-pill d-flex align-items-center">
+                            <i class="bi bi-twitter me-1"></i> Twitter
+                        </a>
+                        {% endif %}
+
+                        {% if user_info[9] %}  <!-- Facebook -->
+                        <a href="{{ user_info[9] if user_info[9].startswith('http') else 'https://' ~ user_info[9] }}"
+                           target="_blank"
+                           class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center">
+                            <i class="bi bi-facebook me-1"></i> Facebook
+                        </a>
+                        {% endif %}
+
+                        {% if user_info[10] %}  <!-- Instagram -->
+                        <a href="{{ user_info[10] if user_info[10].startswith('http') else 'https://' ~ user_info[10] }}"
+                           target="_blank"
+                           class="btn btn-outline-danger btn-sm rounded-pill d-flex align-items-center">
+                            <i class="bi bi-instagram me-1"></i> Instagram
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
                 {% if user_info and user_info[11] %}  <!-- Bio from user_info -->
-                <p class="text-muted small mb-4 border-top pt-3">{{ user_info[11] }}</p>
+                <div class="bio-section mb-4">
+                    <div class="bg-light rounded-4 p-4">
+                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-badge me-2"></i>About Me</h6>
+                        <p class="text-muted mb-0 text-center">{{ user_info[11] }}</p>
+                    </div>
+                </div>
                 {% endif %}
 
                 <!-- Follow / Edit / Change Password Buttons -->
@@ -79,17 +185,17 @@
                 <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}"
                       method="POST">
                     <button type="submit"
-                            class="btn btn-{{ 'outline-danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4">
+                            class="btn btn-{{ 'outline-danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4 fw-bold">
                         <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
                         {{ 'Unfollow' if is_user_following else 'Follow' }}
                     </button>
                 </form>
                 {% else %}
                 <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
-                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
                         <i class="bi bi-pencil me-1"></i> Edit Profile
                     </a>
-                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-primary rounded-pill px-3">
+                    <a href="{{ url_for('change_password') }}" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
                         <i class="bi bi-key me-1"></i> Change Password
                     </a>
                 </div>
@@ -98,21 +204,21 @@
                 <!-- Stats -->
                 <div class="row g-3 mb-4">
                     <div class="col-4">
-                        <div class="bg-light rounded-3 p-3">
+                        <div class="stats-card bg-primary bg-opacity-10 rounded-4 p-3 border-0">
                             <h5 class="fw-bold text-primary mb-1">{{ posts_count }}</h5>
-                            <p class="small text-muted mb-0">Posts</p>
+                            <p class="small text-muted mb-0 fw-medium">Posts</p>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="bg-light rounded-3 p-3">
-                            <h5 class="fw-bold text-primary mb-1">{{ followers_count }}</h5>
-                            <p class="small text-muted mb-0">Followers</p>
+                        <div class="stats-card bg-success bg-opacity-10 rounded-4 p-3 border-0">
+                            <h5 class="fw-bold text-success mb-1">{{ followers_count }}</h5>
+                            <p class="small text-muted mb-0 fw-medium">Followers</p>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="bg-light rounded-3 p-3">
-                            <h5 class="fw-bold text-primary mb-1">{{ following_count }}</h5>
-                            <p class="small text-muted mb-0">Following</p>
+                        <div class="stats-card bg-info bg-opacity-10 rounded-4 p-3 border-0">
+                            <h5 class="fw-bold text-info mb-1">{{ following_count }}</h5>
+                            <p class="small text-muted mb-0 fw-medium">Following</p>
                         </div>
                     </div>
                 </div>
@@ -121,10 +227,10 @@
                 <div class="border-top pt-3 mt-3 text-muted small">
                     <div class="row justify-content-center">
                         <div class="col-12 col-md-6 mb-2 mb-md-0">
-                            <i class="bi bi-person me-2"></i>Member of Software Insight
+                            <i class="bi bi-people me-2"></i>Member of Software Insight
                         </div>
                         <div class="col-12 col-md-6">
-                            <i class="bi bi-clock me-2"></i>
+                            <i class="bi bi-calendar me-2"></i>
                             Joined {{ user[9] if user|length > 9 else 'Recently' }}
                         </div>
                     </div>
