@@ -106,7 +106,7 @@ def load_user(user_id):
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, email, password, first_name, last_name,
-                   username, profession, location, website, bio
+                   username
             FROM users
             WHERE id = %s
         """, (user_id,))
@@ -119,11 +119,7 @@ def load_user(user_id):
                 password=user[2],
                 first_name=user[3],
                 last_name=user[4],
-                username=user[5],
-                profession=user[6],
-                location=user[7],
-                website=user[8],
-                bio=user[9]
+                username=user[5]
             )
     return None
 
@@ -137,11 +133,7 @@ def init_postgres_db():
                 first_name VARCHAR(100),
                 last_name VARCHAR(100),
                 email VARCHAR(150),
-                password VARCHAR(200),
-                location VARCHAR(100),
-                profession VARCHAR(100),
-                website VARCHAR(150),
-                bio TEXT
+                password VARCHAR(200)
             )
         """)
         new_func(cur)
@@ -181,6 +173,7 @@ def init_postgres_db():
                 Twitter VARCHAR(100),
                 Facebook VARCHAR(100),
                 Instagram VARCHAR(100),
+                bio VARCHAR(500),
                 profile_image TEXT,
                 profile_visibility BOOLEAN DEFAULT TRUE,
                 user_id INTEGER UNIQUE,
@@ -563,7 +556,7 @@ def profile(user_id):
 
     # Fetch target user info
     cur.execute("""
-        SELECT id, first_name, last_name, email, bio, location, profession, website
+        SELECT id, username, first_name, last_name, email
         FROM users WHERE id=%s
     """, (user_id,))
     user = cur.fetchone()
@@ -669,7 +662,7 @@ def edit_profile():
         # Fetch user_info data
         cur.execute("""
             SELECT Skill, Experience, Education, Occupation, Location,
-                   Website, LinkedIn, GitHub, Twitter, Facebook, Instagram
+                   Website, LinkedIn, GitHub, Twitter, Facebook, Instagram, bio
             FROM user_info WHERE user_id = %s
         """, (current_user.id,))
         info = cur.fetchone()
@@ -692,6 +685,7 @@ def edit_profile():
             form.twitter.data = info[8]
             form.facebook.data = info[9]
             form.instagram.data = info[10]
+            form.bio.data = info[11]
 
     elif form.validate_on_submit():
         try:
@@ -716,7 +710,7 @@ def edit_profile():
                 INSERT INTO user_info (
                     Skill, Experience, Education, Occupation, Location,
                     Website, LinkedIn, GitHub, Twitter, Facebook,
-                    Instagram, user_id
+                    Instagram, bio, user_id
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (user_id)
@@ -731,7 +725,8 @@ def edit_profile():
                     GitHub = EXCLUDED.GitHub,
                     Twitter = EXCLUDED.Twitter,
                     Facebook = EXCLUDED.Facebook,
-                    Instagram = EXCLUDED.Instagram;
+                    Instagram = EXCLUDED.Instagram,
+                    bio = EXCLUDED.bio;
             """, (
                 form.skill.data,
                 form.experience.data,
@@ -744,6 +739,7 @@ def edit_profile():
                 form.twitter.data,
                 form.facebook.data,
                 form.instagram.data,
+                form.bio.data,
                 current_user.id
             ))
 
