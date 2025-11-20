@@ -556,7 +556,7 @@ def profile(user_id):
 
     # Fetch target user info
     cur.execute("""
-        SELECT id, username, first_name, last_name, email
+        SELECT id, first_name, last_name, email, username
         FROM users WHERE id=%s
     """, (user_id,))
     user = cur.fetchone()
@@ -651,7 +651,6 @@ def edit_profile():
     cur = conn.cursor()
 
     if request.method == "GET":
-
         # Fetch users table data
         cur.execute("""
             SELECT username, first_name, last_name, email
@@ -705,14 +704,14 @@ def edit_profile():
                 current_user.id
             ))
 
-            # Insert/update user_info
+            # Insert/update user_info - FIXED: Added user_id placeholder
             cur.execute("""
                 INSERT INTO user_info (
                     Skill, Experience, Education, Occupation, Location,
                     Website, LinkedIn, GitHub, Twitter, Facebook,
                     Instagram, bio, user_id
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (user_id)
                 DO UPDATE SET
                     Skill = EXCLUDED.Skill,
@@ -740,7 +739,7 @@ def edit_profile():
                 form.facebook.data,
                 form.instagram.data,
                 form.bio.data,
-                current_user.id
+                current_user.id  # Added this missing parameter
             ))
 
             conn.commit()
