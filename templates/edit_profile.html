@@ -87,9 +87,9 @@
                         </div>
 
                         <div class="mb-3">
-                            {{ form.skills.label(class="form-label fw-bold") }}
-                            {{ form.skills(class="form-control", placeholder="e.g. Python, Flask, SQL") }}
-                            {% for error in form.skills.errors %}
+                            {{ form.skill.label(class="form-label fw-bold") }}
+                            {{ form.skill(class="form-control", placeholder="e.g. Python, Flask, SQL") }}
+                            {% for error in form.skill.errors %}
                                 <div class="text-danger small">{{ error }}</div>
                             {% endfor %}
                         </div>
@@ -98,6 +98,14 @@
                                 {{ form.profession.label(class="form-label fw-bold") }}
                                 {{ form.profession(class="form-control", placeholder="Enter your profession") }}
                                 {% for error in form.profession.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                        </div>
+
+                         <div class="col-md-6 mb-3">
+                                {{ form.experience.label(class="form-label fw-bold") }}
+                                {{ form.experience(class="form-control", placeholder="Enter your experience") }}
+                                {% for error in form.experience.errors %}
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
                         </div>
@@ -133,6 +141,12 @@
                                 {{ form.twitter.label(class="form-label fw-bold") }}
                                 {{ form.twitter(class="form-control", placeholder="Twitter Profile URL") }}
                             </div>
+
+                             <div class="col-md-6 mb-3">
+                                {{ form.facebook.label(class="form-label fw-bold") }}
+                                {{ form.facebook(class="form-control", placeholder="Facebook Profile URL") }}
+                            </div>
+
                             <div class="col-md-6 mb-3">
                                 {{ form.instagram.label(class="form-label fw-bold") }}
                                 {{ form.instagram(class="form-control", placeholder="Instagram Profile URL") }}

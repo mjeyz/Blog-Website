@@ -50,8 +50,9 @@ class EditProfileForm(FlaskForm):
 
     # --- Professional / Personal Info ---
     occupation = StringField("Occupation", validators=[Optional(), Length(max=100)])
-    skills = StringField("Skills", validators=[Optional(), Length(max=200)])  # e.g., "Python, Flask, SQL"
+    skill = StringField("Skills", validators=[Optional(), Length(max=200)])  # e.g., "Python, Flask, SQL"
     profession = StringField("Professional Title", validators=[Optional(), Length(max=100)])
+    experience = StringField("Experience", validators=[Optional(), Length(max=100)])
     website = URLField("Website / Portfolio", validators=[Optional(), URL(), Length(max=200)])
     education = StringField("Education / Institution", validators=[Optional(), Length(max=150)])
 
@@ -59,6 +60,7 @@ class EditProfileForm(FlaskForm):
     linkedin = URLField("LinkedIn Profile", validators=[Optional(), URL(), Length(max=200)])
     github = URLField("GitHub Profile", validators=[Optional(), URL(), Length(max=200)])
     twitter = URLField("Twitter Profile", validators=[Optional(), URL(), Length(max=200)])
+    facebook = URLField("Facebook Profile", validators=[Optional(), URL(), Length(max=200)])
     instagram = URLField("Instagram Profile", validators=[Optional(), URL(), Length(max=200)])
 
     # --- Settings ---

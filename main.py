@@ -669,7 +669,7 @@ def edit_profile():
         # Get extended profile info from user_info table
         cur.execute("""
             SELECT Skill, Experience, Education, Occupation, Location, Website, 
-                   LinkedIn, GitHub, Twitter, Facebook, Instagram, profile_image, profile_visibility
+                   LinkedIn, GitHub, Twitter, Facebook, Instagram
             FROM user_info WHERE user_id = %s
         """, (current_user.id,))
         user_info = cur.fetchone()
@@ -692,8 +692,6 @@ def edit_profile():
             form.twitter.data = user_info[8]
             form.facebook.data = user_info[9]
             form.instagram.data = user_info[10]
-            form.profile_image.data = user_info[11]
-            form.profile_visibility.data = user_info[12]
 
     elif form.validate_on_submit():
         try:
@@ -717,8 +715,8 @@ def edit_profile():
             cur.execute("""
                 INSERT INTO user_info (
                     Skill, Experience, Education, Occupation, Location, Website,
-                    LinkedIn, GitHub, Twitter, Facebook, Instagram, profile_image, 
-                    profile_visibility, user_id
+                    LinkedIn, GitHub, Twitter, Facebook, Instagram, 
+                    user_id
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (user_id) 
                 DO UPDATE SET
@@ -733,8 +731,6 @@ def edit_profile():
                     Twitter = EXCLUDED.Twitter,
                     Facebook = EXCLUDED.Facebook,
                     Instagram = EXCLUDED.Instagram,
-                    profile_image = EXCLUDED.profile_image,
-                    profile_visibility = EXCLUDED.profile_visibility
             """, (
                 form.skill.data,
                 form.experience.data,
@@ -747,8 +743,6 @@ def edit_profile():
                 form.twitter.data,
                 form.facebook.data,
                 form.instagram.data,
-                form.profile_image.data,
-                form.profile_visibility.data,
                 current_user.id
             ))
 
