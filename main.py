@@ -2,6 +2,7 @@ import os
 import secrets
 import smtplib
 import psycopg2
+from database import DB_PATH, init_postgres_db, conn
 from functools import wraps
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
 from flask_bootstrap import Bootstrap5
@@ -16,27 +17,17 @@ from PIL import Image
 
 load_dotenv()
 
+# : Initialize Flask app and configure extensions
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "34dfhdgfh46ydbjtytg"
-Bootstrap5(app)
-ckeditor = CKEditor(app)
-
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_PKG_TYPE'] = 'full'
 app.config['CKEDITOR_CDN_URL'] = 'https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js'
 app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)
 app.config['REMEMBER_COOKIE_REFRESH_EACH_REQUEST'] = True
 app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
-
-# DATABASE PATH
-DB_PATH = "postgres://postgres:9992@localhost:5432/postgres"
-conn = psycopg2.connect(
-    dbname="postgres",
-    user="postgres",
-    password="9992",
-    host="localhost",
-    port="5432"
-)
+Bootstrap5(app)
+ckeditor = CKEditor(app)
 
 # : Configure Flask-Login
 login_manager = LoginManager()
@@ -61,7 +52,7 @@ def save_picture(form_picture):
     picture_fn = random_hex + f_ext
     picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
 
-    # Resize like Google
+    # Resize image
     output_size = (200, 200)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
@@ -143,81 +134,7 @@ def load_user(user_id):
     return None
 
 
-def init_postgres_db():
-    with conn.cursor() as cur:
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(100),
-                first_name VARCHAR(100),
-                last_name VARCHAR(100),
-                email VARCHAR(150),
-                password VARCHAR(200)
-            )
-        """)
-        new_func(cur)
-        conn.commit()
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS comment (
-                id SERIAL PRIMARY KEY,
-                text TEXT NOT NULL,
-                author_id INTEGER NOT NULL,
-                post_id INTEGER NOT NULL,
-                FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
-                FOREIGN KEY (post_id) REFERENCES blog_post (id) ON DELETE CASCADE
-            )
-        ''')
-        conn.commit()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS followers (
-                id SERIAL PRIMARY KEY,
-                follower_id INTEGER NOT NULL,
-                followed_id INTEGER NOT NULL,
-                FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (followed_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
-        conn.commit()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS user_info (
-                skill VARCHAR(100),
-                Experience VARCHAR(100),
-                Education VARCHAR(100),
-                Occupation VARCHAR(100),
-                location VARCHAR(100),
-                profession VARCHAR(100),
-                website VARCHAR(150),
-                LinkedIn VARCHAR(100),
-                GitHub VARCHAR(100),
-                Twitter VARCHAR(100),
-                Facebook VARCHAR(100),
-                Instagram VARCHAR(100),
-                bio VARCHAR(500),
-                profile_image TEXT,
-                profile_visibility BOOLEAN DEFAULT TRUE,
-                user_id INTEGER UNIQUE,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
-        conn.commit()
-
-
-def new_func(cur):
-    cur.execute("""
-            CREATE TABLE IF NOT EXISTS blog_post (
-                id SERIAL PRIMARY KEY,
-                title TEXT NOT NULL,
-                subtitle TEXT NOT NULL,
-                date TEXT NOT NULL,
-                body TEXT NOT NULL,
-                author TEXT NOT NULL,
-                img_url TEXT NOT NULL,
-                author_id INTEGER NOT NULL,
-                FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        """)
-
-
+# : Initialize the database
 init_postgres_db()
 
 
@@ -233,7 +150,8 @@ def admin_only(f):
     return decorated_function
 
 
-# : Use Werkzeug to hash the user's password when creating a new user.
+# ------------ ROUTES -------------------- #
+# : Register a new user
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -268,7 +186,7 @@ def register():
     return render_template("register.html", form=form, current_user=current_user)
 
 
-# : Retrieve a user from the database based on their email.
+# : Login an existing user
 @app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -297,6 +215,7 @@ def login():
     return render_template("login.html", form=form, current_user=current_user)
 
 
+# : Logout the current user
 @app.route('/logout')
 def logout():
     logout_user()
@@ -304,6 +223,7 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 
+# : Display all blog posts
 @app.route('/', methods=["GET", "POST", "DELETE", "PUT", "PATCH"])
 def get_all_posts():
     with psycopg2.connect(DB_PATH) as conn:
@@ -477,6 +397,7 @@ def download():
     return send_from_directory("static", path="files/MudasirAbbas.pdf", as_attachment=True)
 
 
+# : Contact form to send email
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -567,12 +488,12 @@ def count_following(user_id):
     cur.close()
     return count
 
+
 @app.route("/profile/<int:user_id>")
 @login_required
 def profile(user_id):
     cur = conn.cursor()
 
-    # Fetch target user info - include profile_pic if it exists in users table
     cur.execute("""
         SELECT id, first_name, last_name, email, username
         FROM users WHERE id=%s
@@ -643,6 +564,7 @@ def upload_profile_pic():
             return redirect(request.referrer or url_for('profile', user_id=current_user.id))
     return render_template('upload_profile_pic.html', current_user=current_user)
 
+
 @app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
@@ -703,7 +625,6 @@ def edit_profile():
                 current_user.id
             ))
 
-            # Insert/update user_info - FIXED: Added user_id placeholder
             cur.execute("""
                 INSERT INTO user_info (
                     Skill, Experience, Education, Occupation, Location,
@@ -752,6 +673,7 @@ def edit_profile():
     return render_template("edit_profile.html", user=current_user, form=form)
 
 
+# ---- Change Password Route ---- #
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
