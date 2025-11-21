@@ -13,6 +13,7 @@ class CreatePostForm(FlaskForm):
     body = CKEditorField("Blog Content", validators=[DataRequired()])
     submit = SubmitField("Submit Post")
 
+
 # : Create a RegisterForm to register new users
 class RegisterForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -22,6 +23,7 @@ class RegisterForm(FlaskForm):
     remember = BooleanField("Remember Me")
     submit = SubmitField("Submit")
 
+
 # : Create a LoginForm to log in existing users
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -29,15 +31,18 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Remember Me")
     submit = SubmitField("Let Me In!")
 
+
 # : Create a CommentForm so users can leave comments below posts
 class CommentForm(FlaskForm):
     text = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
 
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, URLField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Length, Email, Optional, URL, EqualTo
 from flask_ckeditor import CKEditorField
+
 
 class EditProfileForm(FlaskForm):
     # --- Basic Info ---
@@ -91,4 +96,3 @@ class ChangePasswordForm(FlaskForm):
     ])
 
     submit = SubmitField("Change Password")
-

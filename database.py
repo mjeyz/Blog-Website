@@ -1,6 +1,5 @@
 import psycopg2
 
-
 # DATABASE PATH
 DB_PATH = "postgres://postgres:9992@localhost:5432/postgres"
 conn = psycopg2.connect(
