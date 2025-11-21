@@ -20,7 +20,9 @@ def init_postgres_db():
                 first_name VARCHAR(100),
                 last_name VARCHAR(100),
                 email VARCHAR(150),
-                password VARCHAR(200)
+                password VARCHAR(200),
+                joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_admin BOOLEAN DEFAULT FALSE
             )
         """)
         cur.execute("""
@@ -80,3 +82,6 @@ def init_postgres_db():
             )
         """)
         conn.commit()
+
+
+init_postgres_db()
