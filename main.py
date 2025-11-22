@@ -85,8 +85,8 @@ class User(UserMixin):
             experience=None,
             education=None,
             occupation=None,
-
     ):
+
         self.id = id
         self.email = email
         self.password = password
@@ -108,6 +108,7 @@ class User(UserMixin):
         self.experience = experience or ""
         self.education = education or ""
         self.occupation = occupation or ""
+        self.joined_date = joined_date or ""
 
 
 @login_manager.user_loader
@@ -116,7 +117,7 @@ def load_user(user_id):
         cursor = conn.cursor()
         cursor.execute("""
             SELECT id, email, password, first_name, last_name,
-                   username
+                   username, joined_date
             FROM users
             WHERE id = %s
         """, (user_id,))
@@ -129,7 +130,8 @@ def load_user(user_id):
                 password=user[2],
                 first_name=user[3],
                 last_name=user[4],
-                username=user[5]
+                username=user[5],
+                joined_date=user[6]
             )
     return None
 
@@ -592,6 +594,7 @@ def edit_profile():
             form.first_name.data = user[1]
             form.last_name.data = user[2]
             form.email.data = user[3]
+            form.joined_date.data = current_user.joined_date
 
         if info:
             form.skill.data = info[0]
