@@ -6,15 +6,23 @@
     <div class="col-md-10 col-lg-8">
         <div class="card shadow-lg border-0 rounded-4">
             <div class="card-body text-center p-5">
+
                 <!-- Flash Messages -->
-                <div class="container mt-4">
+                <div class="container mt-3 px-4 px-lg-5">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                     {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert"
+                         id="flash-message-{{ loop.index }}">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                    <script>
+                        setTimeout(function() {
+                            var msg = document.getElementById('flash-message-{{ loop.index }}');
+                            if (msg) { msg.style.display = 'none'; }
+                        }, 5000);
+                    </script>
                     {% endfor %}
                     {% endif %}
                     {% endwith %}
@@ -35,7 +43,6 @@
                         <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
                               style="width: 15px; height: 15px;"></span>
                     </div>
-                    <!-- Added upload link for current user's own profile -->
                     {% if current_user.id == user[0] %}
                     <div class="mt-2">
                         <a href="{{ url_for('upload_profile_pic') }}" class="btn btn-sm btn-outline-primary">
@@ -233,7 +240,8 @@
                         </div>
                         <div class="col-12 col-md-6">
                             <i class="bi bi-calendar me-2"></i>
-                            Joined {{ current_user.joined_date .strftime('%B %Y') if current_user.id == user[0] else user_info[12].strftime('%B %Y') }}
+                            Joined {{ current_user.joined_date .strftime('%B %Y') if current_user.id == user[0] else
+                            user_info[12].strftime('%B %Y') }}
                         </div>
                     </div>
                 </div>
@@ -243,15 +251,4 @@
 </div>
 
 {% include "footer.html" %}
-<script>
-    // Auto-dismiss flash messages after 3 seconds
-    setTimeout(function () {
-        let alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-            let alertInstance = bootstrap.Alert.getOrCreateInstance(alert);
-            alertInstance.close();
-        });
-    }, 3000); // 3000 ms = 3 seconds
-</script>
-
 {% endblock %}

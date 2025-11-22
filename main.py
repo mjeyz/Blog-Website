@@ -594,7 +594,6 @@ def edit_profile():
             form.first_name.data = user[1]
             form.last_name.data = user[2]
             form.email.data = user[3]
-            form.joined_date.data = current_user.joined_date
 
         if info:
             form.skill.data = info[0]
