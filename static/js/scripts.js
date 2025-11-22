@@ -1,11 +1,9 @@
 /*!
  * Start Bootstrap - Clean Blog v6.0.9
- * https://startbootstrap.com/theme/clean-blog
- * Licensed under MIT
  */
 
 class CleanBlogApp {
-  constructor() {
+  constructor() { 
     this.mainNav = document.getElementById('mainNav');
     this.scrollPos = 0;
     this.init();
@@ -31,14 +29,12 @@ class CleanBlogApp {
       const currentTop = Math.abs(document.body.getBoundingClientRect().top);
 
       if (currentTop < this.scrollPos) {
-        // Scrolling Up
         if (currentTop > 0 && this.mainNav.classList.contains('is-fixed')) {
           this.mainNav.classList.add('is-visible');
         } else {
           this.mainNav.classList.remove('is-visible', 'is-fixed');
         }
       } else {
-        // Scrolling Down
         this.mainNav.classList.remove('is-visible');
         if (currentTop > headerHeight && !this.mainNav.classList.contains('is-fixed')) {
           this.mainNav.classList.add('is-fixed');
@@ -64,9 +60,7 @@ class CleanBlogApp {
   // Auto update copyright year
   autoUpdateCopyright() {
     const yearEl = document.getElementById('currentYear');
-    if (yearEl) {
-      yearEl.textContent = new Date().getFullYear();
-    }
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
   }
 
   // Hover effect for icons
@@ -82,31 +76,34 @@ class CleanBlogApp {
     element.style.transform = `scale(${scale})`;
   }
 
-  // Password visibility toggle
+  // ⭐ PASSWORD TOGGLE FIXED & WORKING
   setupPasswordToggles() {
-    document.querySelectorAll('.password-toggle').forEach(button => {
-      button.addEventListener('click', (e) => this.togglePasswordVisibility(e));
+    const pwdField = document.querySelector('input[type="password"]');
+    if (!pwdField) return;
+
+    // Create button
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'btn btn-sm btn-outline-secondary position-absolute';
+    toggleBtn.style.right = '10px';
+    toggleBtn.style.top = '50%';
+    toggleBtn.style.transform = 'translateY(-50%)';
+    toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+
+    // Attach to parent
+    pwdField.parentElement.style.position = 'relative';
+    pwdField.parentElement.appendChild(toggleBtn);
+
+    // Toggle visibility
+    toggleBtn.addEventListener('click', () => {
+      const type = pwdField.type === 'password' ? 'text' : 'password';
+      pwdField.type = type;
+
+      toggleBtn.innerHTML =
+        type === 'password'
+          ? '<i class="bi bi-eye"></i>'
+          : '<i class="bi bi-eye-slash"></i>';
     });
-  }
-
-  togglePasswordVisibility(event) {
-    const button = event.currentTarget;
-    const targetId = button.dataset.target;
-    const targetInput = document.getElementById(targetId);
-    const icon = button.querySelector('i');
-
-    if (!targetInput) return;
-
-    if (targetInput.type === "password") {
-      targetInput.type = "text";
-      icon.classList.replace("fa-eye", "fa-eye-slash");
-      button.setAttribute('aria-label', 'Hide password');
-    } else {
-      targetInput.type = "password";
-      icon.classList.replace("fa-eye-slash", "fa-eye");
-      button.setAttribute('aria-label', 'Show password');
-    }
-    targetInput.focus();
   }
 
   // Bootstrap form validation
@@ -122,14 +119,13 @@ class CleanBlogApp {
     });
   }
 
-  // File upload & preview
+  // File upload logic
   setupFileUpload() {
     const fileInput = document.getElementById('picture');
     const profilePreview = document.getElementById('profilePreview');
 
     if (!fileInput || !profilePreview) return;
 
-    // Store original src
     fileInput.dataset.originalSrc = profilePreview.src;
 
     fileInput.addEventListener('change', (event) => this.handleFileSelect(event));
@@ -141,7 +137,6 @@ class CleanBlogApp {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       this.showAlert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
@@ -149,7 +144,6 @@ class CleanBlogApp {
       return;
     }
 
-    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       this.showAlert('File size must be less than 5MB');
       this.clearFileSelection();
@@ -160,10 +154,7 @@ class CleanBlogApp {
     this.previewImage(file);
   }
 
-  showAlert(message) {
-    // You can replace this with a more sophisticated notification system
-    alert(message);
-  }
+  showAlert(message) { alert(message); }
 
   updateFileInfo(file) {
     const fileNameEl = document.getElementById('fileName');
@@ -181,9 +172,7 @@ class CleanBlogApp {
     const reader = new FileReader();
     reader.onload = (e) => {
       const profilePreview = document.getElementById('profilePreview');
-      if (profilePreview) {
-        profilePreview.src = e.target.result;
-      }
+      if (profilePreview) profilePreview.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -198,10 +187,8 @@ class CleanBlogApp {
     if (fileInfoEl) fileInfoEl.classList.add('d-none');
     if (uploadBtn) uploadBtn.disabled = true;
 
-    // Reset preview image
     if (profilePreview && fileInput) {
-      const originalSrc = fileInput.dataset.originalSrc;
-      profilePreview.src = originalSrc;
+      profilePreview.src = fileInput.dataset.originalSrc;
     }
   }
 
@@ -213,20 +200,7 @@ class CleanBlogApp {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  // Camera input
-  openCamera() {
-    const fileInput = document.getElementById('picture');
-    if (!fileInput) return;
-
-    fileInput.removeAttribute('capture');
-    fileInput.setAttribute('capture', 'environment');
-    fileInput.setAttribute('accept', 'image/*');
-    fileInput.click();
-  }
-
-  // Drag & drop and click preview
   setupImagePreview(profilePreview, fileInput) {
-    // Drag over
     profilePreview.addEventListener('dragover', (e) => {
       e.preventDefault();
       this.scaleElement(profilePreview, 1.05);
@@ -246,18 +220,14 @@ class CleanBlogApp {
       }
     });
 
-    // Click to select file
-    profilePreview.addEventListener('click', () => {
-      fileInput.click();
-    });
+    profilePreview.addEventListener('click', () => fileInput.click());
 
-    // Cursor and tooltip
     profilePreview.style.cursor = 'pointer';
     profilePreview.title = 'Click to choose a photo';
   }
 }
 
-// Initialize the application when DOM is loaded
+// Initialize app
 document.addEventListener('DOMContentLoaded', () => {
   new CleanBlogApp();
 });
