@@ -40,17 +40,13 @@
                 {% endfor %}
                 {% endif %}
                 {% endwith %}
-
                 <!-- Login Form -->
                 <div class="mt-4">
-{{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+                    {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
                 </div>
-
             </div>
         </div>
     </div>
 </main>
-
 {% include "footer.html" %}
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}
