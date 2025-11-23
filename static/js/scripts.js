@@ -1,7 +1,3 @@
-/*!
- * Start Bootstrap - Clean Blog v6.0.9
- */
-
 class CleanBlogApp {
   constructor() { 
     this.mainNav = document.getElementById('mainNav');
@@ -82,13 +78,12 @@ class CleanBlogApp {
     if (!pwdField) return;
 
     // Create button
-    const toggleBtn = document.createElement('button');
-    toggleBtn.type = 'button';
-    toggleBtn.className = 'btn btn-sm btn-outline-secondary position-absolute';
-    toggleBtn.style.right = '10px';
-    toggleBtn.style.top = '50%';
+    const toggleBtn = document.createElement('span');
+    toggleBtn.className = 'position-absolute cursor-pointer';
+    toggleBtn.style.right = '15px';
+    toggleBtn.style.top = '75%';
     toggleBtn.style.transform = 'translateY(-50%)';
-    toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
+    toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
 
     // Attach to parent
     pwdField.parentElement.style.position = 'relative';
@@ -101,8 +96,8 @@ class CleanBlogApp {
 
       toggleBtn.innerHTML =
         type === 'password'
-          ? '<i class="bi bi-eye"></i>'
-          : '<i class="bi bi-eye-slash"></i>';
+          ? '<i class="bi bi-eye-slash"></i>'
+          : '<i class="bi bi-eye"></i>';
     });
   }
 
