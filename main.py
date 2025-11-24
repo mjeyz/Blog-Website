@@ -19,7 +19,7 @@ load_dotenv()
 
 # : Initialize Flask app and configure extensions
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "34dfhdgfh46ydbjtytg"
+app.config['SECRET_KEY'] = os.getenv("YOUR_SECRET_KEY")
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_PKG_TYPE'] = 'full'
 app.config['CKEDITOR_CDN_URL'] = 'https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js'
@@ -411,8 +411,8 @@ def contact():
         if not email:
             flash("Please provide your email address.", "danger")
         else:
-            smtp_email = "thisismjeyz@gmail.com"
-            smtp_password = "gicx goix fiau uxjl"
+            smtp_email = os.getenv("Your_SMTP_EMAIL")
+            smtp_password = os.getenv("Your_SMTP_PASSWORD")
             if not smtp_email or not smtp_password:
                 flash("Server email configuration is missing.", "danger")
             else:

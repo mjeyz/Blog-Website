@@ -1,7 +1,9 @@
+import os
+
 import psycopg2
 
 # DATABASE PATH
-DB_PATH = "postgres://postgres:9992@localhost:5432/postgres"
+DB_PATH = os.getenv("YOUR_DB_PATH")
 conn = psycopg2.connect(
     dbname="postgres",
     user="postgres",
