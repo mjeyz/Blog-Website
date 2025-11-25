@@ -1,19 +1,20 @@
 import os
-import secrets
 import smtplib
-import psycopg2
-from database import DB_PATH, init_postgres_db, conn
+from datetime import date, timedelta
 from functools import wraps
+
+import psycopg2
+from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory, abort
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from datetime import date, timedelta
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
-from werkzeug.security import check_password_hash, generate_password_hash
-from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
-from dotenv import load_dotenv
 from flask_gravatar import Gravatar
-from PIL import Image
+from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from database import DB_PATH, init_postgres_db, conn
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
+from functions import allowed_file, save_picture
 
 load_dotenv()
 
@@ -70,7 +71,6 @@ class User(UserMixin):
             education=None,
             occupation=None,
     ):
-
         self.id = id
         self.email = email
         self.password = password
@@ -451,30 +451,6 @@ def unfollow(user_id):
     return redirect(url_for("profile", user_id=user_id))
 
 
-def is_following(current_user_id, target_user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user_id, target_user_id))
-    result = cur.fetchone()
-    cur.close()
-    return result is not None
-
-
-def count_followers(user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
-    count = cur.fetchone()[0]
-    cur.close()
-    return count
-
-
-def count_following(user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
-    count = cur.fetchone()[0]
-    cur.close()
-    return count
-
-
 @app.route("/profile/<int:user_id>")
 @login_required
 def profile(user_id):
@@ -524,25 +500,6 @@ def profile(user_id):
                            user_id=user_id)
 
 
-# ------------Function to save and resize image----------------
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
-
-    # Resize image
-    output_size = (200, 200)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
-
-    return picture_fn
-
-def allowed_file(filename):
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
 @app.route('/upload-profile-pic', methods=['GET', 'POST'])
 @login_required
 def upload_profile_pic():
@@ -578,7 +535,6 @@ def upload_profile_pic():
 
     # GET request → show upload form
     return render_template('upload_profile_pic.html', current_user=current_user)
-
 
 
 @app.route("/edit-profile", methods=["GET", "POST"])
