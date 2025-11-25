@@ -7,7 +7,6 @@ The Insight Hub is a modern blog platform designed to share knowledge, creativit
 - Create, Edit & Delete Posts
 - Comment System
 - Responsive Design
-- Search Functionality
 - Admin Dashboard
 
 ## Tech Stack
