@@ -45,22 +45,6 @@ gravatar = Gravatar(app,
                     base_url=None)
 
 
-# Function to save and resize image
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
-
-    # Resize image
-    output_size = (200, 200)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
-
-    return picture_fn
-
-
 class User(UserMixin):
     def __init__(
             self,
@@ -540,31 +524,61 @@ def profile(user_id):
                            user_id=user_id)
 
 
+# ------------Function to save and resize image----------------
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
+
+    # Resize image
+    output_size = (200, 200)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
+
+def allowed_file(filename):
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
 @app.route('/upload-profile-pic', methods=['GET', 'POST'])
 @login_required
 def upload_profile_pic():
     if request.method == 'POST':
+
+        # Check if file input exists
         if 'picture' not in request.files:
             flash('No file selected.', 'danger')
-            return redirect(request.referrer or url_for('profile', user_id=current_user.id))
+            return redirect(url_for('profile', user_id=current_user.id))
 
         file = request.files['picture']
 
+        # Check if filename is empty
         if file.filename == '':
             flash('No file selected.', 'danger')
-            return redirect(request.referrer or url_for('profile', user_id=current_user.id))
+            return redirect(url_for('profile', user_id=current_user.id))
 
+        # Check if allowed image type
         if file and allowed_file(file.filename):
-            # Save and resize picture
+
+            # Save picture
             filename = save_picture(file)
             current_user.image_file = filename
 
+            # IMPORTANT: Save to database
+            conn.commit()
             flash('Your profile picture has been updated!', 'success')
             return redirect(url_for('profile', user_id=current_user.id))
+
         else:
             flash('Please upload a valid image file (PNG, JPG, JPEG, GIF).', 'danger')
-            return redirect(request.referrer or url_for('profile', user_id=current_user.id))
+            return redirect(url_for('profile', user_id=current_user.id))
+
+    # GET request → show upload form
     return render_template('upload_profile_pic.html', current_user=current_user)
+
 
 
 @app.route("/edit-profile", methods=["GET", "POST"])
