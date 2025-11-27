@@ -1,31 +1,6 @@
 import os
 import secrets
 from PIL import Image
-from database import conn
-
-
-def is_following(current_user_id, target_user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user_id, target_user_id))
-    result = cur.fetchone()
-    cur.close()
-    return result is not None
-
-
-def count_followers(user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
-    count = cur.fetchone()[0]
-    cur.close()
-    return count
-
-
-def count_following(user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
-    count = cur.fetchone()[0]
-    cur.close()
-    return count
 
 
 # ------------Function to save and resize image----------------
