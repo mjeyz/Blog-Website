@@ -3,92 +3,108 @@
 
 <!-- Profile Card -->
 <div class="container py-5 mt-5 d-flex justify-content-center align-items-center min-vh-100">
-    <div class="col-md-10 col-lg-8">
-        <div class="card shadow-lg border-0 rounded-4">
-            <div class="card-body text-center p-5">
-
-                <!-- Flash Messages -->
-                <div class="container mt-3 px-4 px-lg-5">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                    {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert"
-                         id="flash-message-{{ loop.index }}">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    <script>
-                        setTimeout(function() {
-                            var msg = document.getElementById('flash-message-{{ loop.index }}');
-                            if (msg) { msg.style.display = 'none'; }
-                        }, 5000);
-                    </script>
-                    {% endfor %}
-                    {% endif %}
-                    {% endwith %}
-                </div>
-
-                <div class="mb-4 position-relative">
-                    <div class="d-inline-block position-relative">
-                        <img
+    <div class="col-md-10 col-lg-8 col-xl-8">
+        <div class="card profile-card shadow-lg border-0 rounded-4 overflow-hidden">
+            <!-- Profile Header with Gradient -->
+            <div class="profile-header bg-gradient-primary py-4 px-5 text-center text-white position-relative">
+                <div class="background-pattern"></div>
+                <div class="position-relative z-1">
+                    <!-- Avatar -->
+                    <div class="mb-4 position-relative d-inline-block">
+                        <div class="avatar-container position-relative">
+                            <img
                                 src="{% if user[5] %}
                                 {{ url_for('static', filename='profile_pics/' ~ user[5]) }}
                                 {% else %}
                                 {{ user[3] | gravatar }}
                                 {% endif %}"
                                 alt="{{ user[1] }} {{ user[2] }}"
-                                class="rounded-circle border border-3 border-light shadow"
-                                style="width: 130px; height: 130px; object-fit: cover;">
+                                class="avatar-img rounded-circle border border-4 border-white shadow-lg"
+                            >
+                            <span class="online-status position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white"></span>
+                        </div>
+                        {% if current_user.id == user[0] %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('upload_profile_pic') }}" class="btn btn-light btn-sm rounded-pill px-3">
+                                <i class="bi bi-camera me-1"></i>Change Photo
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
 
-                        <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
-                              style="width: 15px; height: 15px;"></span>
-                    </div>
-                    {% if current_user.id == user[0] %}
-                    <div class="mt-2">
-                        <a href="{{ url_for('upload_profile_pic') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-camera me-1"></i>Change Photo
-                        </a>
-                    </div>
-                    {% endif %}
+                    <!-- User Basic Info -->
+                    <h2 class="fw-bold mb-1">{{ user[1] }} {{ user[2] }}</h2>
+                    <p class="mb-3 opacity-75">
+                        <i class="bi bi-envelope me-2"></i>{{ user[3] }}
+                    </p>
                 </div>
+            </div>
 
-                <!-- User Info -->
-                <h3 class="fw-bold mb-1">{{ user[1] }} {{ user[2] }}</h3>
-                <p class="text-muted mb-4">
-                    <i class="bi bi-envelope me-2"></i>{{ user[3] }}
-                </p>
+            <!-- Flash Messages -->
+            <div class="container mt-4 px-4 px-lg-5">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show text-center rounded-3" role="alert"
+                     id="flash-message-{{ loop.index }}">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <script>
+                    setTimeout(function() {
+                        var msg = document.getElementById('flash-message-{{ loop.index }}');
+                        if (msg) {
+                            msg.classList.add('fade');
+                            setTimeout(() => msg.remove(), 150);
+                        }
+                    }, 5000);
+                </script>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
 
-                <!-- Enhanced Occupation, Location, Website Section -->
-                <div class="enhanced-info-section mb-4">
+            <div class="card-body p-5">
+                <!-- Enhanced Info Cards -->
+                <div class="enhanced-info-section mb-5">
                     <div class="row g-3 justify-content-center">
-                        {% if user_info and user_info[3] %}  <!-- Occupation -->
-                        <div class="col-auto">
-                            <div class="info-card bg-primary bg-opacity-10 rounded-4 p-3 text-center">
-                                <i class="bi bi-briefcase-fill text-primary fs-5 mb-2"></i>
+                        {% if user_info and user_info[3] %}
+                        <div class="col-sm-4">
+                            <div class="info-card card-hover bg-primary bg-opacity-10 rounded-4 p-3 text-center h-100 border-0">
+                                <div class="info-icon bg-primary bg-opacity-25 rounded-3 p-2 d-inline-flex mb-3">
+                                    <i class="bi bi-briefcase-fill text-primary fs-5"></i>
+                                </div>
                                 <h6 class="fw-bold text-dark mb-1">Occupation</h6>
                                 <p class="small text-muted mb-0">{{ user_info[3] }}</p>
                             </div>
                         </div>
                         {% endif %}
 
-                        {% if user_info and user_info[4] %}  <!-- Location -->
-                        <div class="col-auto">
-                            <div class="info-card bg-danger bg-opacity-10 rounded-4 p-3 text-center">
-                                <i class="bi bi-geo-alt-fill text-danger fs-5 mb-2"></i>
+                        {% if user_info and user_info[4] %}
+                        <div class="col-sm-4">
+                            <div class="info-card card-hover bg-danger bg-opacity-10 rounded-4 p-3 text-center h-100 border-0">
+                                <div class="info-icon bg-danger bg-opacity-25 rounded-3 p-2 d-inline-flex mb-3">
+                                    <i class="bi bi-geo-alt-fill text-danger fs-5"></i>
+                                </div>
                                 <h6 class="fw-bold text-dark mb-1">Location</h6>
                                 <p class="small text-muted mb-0">{{ user_info[4] }}</p>
                             </div>
                         </div>
                         {% endif %}
 
-                        {% if user_info and user_info[5] %}  <!-- Website -->
-                        <div class="col-auto">
-                            <div class="info-card bg-success bg-opacity-10 rounded-4 p-3 text-center">
-                                <i class="bi bi-globe text-success fs-5 mb-2"></i>
+                        {% if user_info and user_info[5] %}
+                        <div class="col-sm-4">
+                            <div class="info-card card-hover bg-success bg-opacity-10 rounded-4 p-3 text-center h-100 border-0">
+                                <div class="info-icon bg-success bg-opacity-25 rounded-3 p-2 d-inline-flex mb-3">
+                                    <i class="bi bi-globe text-success fs-5"></i>
+                                </div>
                                 <h6 class="fw-bold text-dark mb-1">Website</h6>
                                 <a href="{{ user_info[5] if user_info[5].startswith('http') else 'https://' ~ user_info[5] }}"
                                    target="_blank"
-                                   class="small text-decoration-none text-primary d-block">
+                                   class="small text-decoration-none text-primary d-block fw-medium">
                                     {{ user_info[5]|replace('https://', '')|replace('http://', '')|truncate(20) }}
                                 </a>
                             </div>
@@ -97,34 +113,47 @@
                     </div>
                 </div>
 
-                <!-- Additional Info Section -->
-                <div class="additional-info mb-4">
-                    <!-- Skills, Experience, Education in a grid -->
-                    <div class="row g-3 mb-3">
-                        {% if user_info and user_info[0] %}  <!-- Skills -->
+                <!-- Skills & Experience Grid -->
+                <div class="additional-info mb-5">
+                    <div class="row g-4">
+                        {% if user_info and user_info[0] %}
                         <div class="col-md-4">
-                            <div class="bg-light rounded-4 p-3 h-100">
-                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-tools me-2"></i>Skills</h6>
-                                <p class="small text-muted mb-0">{{ user_info[0] }}</p>
+                            <div class="feature-card bg-light rounded-4 p-4 h-100 border-0 card-hover">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-wrapper bg-primary bg-opacity-10 rounded-3 p-2 me-3">
+                                        <i class="bi bi-tools text-primary fs-5"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-0">Skills</h6>
+                                </div>
+                                <p class="text-muted mb-0 small">{{ user_info[0] }}</p>
                             </div>
                         </div>
                         {% endif %}
 
-                        {% if user_info and user_info[1] %}  <!-- Experience -->
+                        {% if user_info and user_info[1] %}
                         <div class="col-md-4">
-                            <div class="bg-light rounded-4 p-3 h-100">
-                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-award me-2"></i>Experience</h6>
-                                <p class="small text-muted mb-0">{{ user_info[1] }}</p>
+                            <div class="feature-card bg-light rounded-4 p-4 h-100 border-0 card-hover">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-wrapper bg-warning bg-opacity-10 rounded-3 p-2 me-3">
+                                        <i class="bi bi-award text-warning fs-5"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-0">Experience</h6>
+                                </div>
+                                <p class="text-muted mb-0 small">{{ user_info[1] }}</p>
                             </div>
                         </div>
                         {% endif %}
 
-                        {% if user_info and user_info[2] %}  <!-- Education -->
+                        {% if user_info and user_info[2] %}
                         <div class="col-md-4">
-                            <div class="bg-light rounded-4 p-3 h-100">
-                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-mortarboard me-2"></i>Education
-                                </h6>
-                                <p class="small text-muted mb-0">{{ user_info[2] }}</p>
+                            <div class="feature-card bg-light rounded-4 p-4 h-100 border-0 card-hover">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-wrapper bg-info bg-opacity-10 rounded-3 p-2 me-3">
+                                        <i class="bi bi-mortarboard text-info fs-5"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark mb-0">Education</h6>
+                                </div>
+                                <p class="text-muted mb-0 small">{{ user_info[2] }}</p>
                             </div>
                         </div>
                         {% endif %}
@@ -133,114 +162,134 @@
 
                 <!-- Social Links -->
                 {% if user_info and (user_info[6] or user_info[7] or user_info[8] or user_info[9] or user_info[10]) %}
-                <div class="social-links mb-4">
-                    <h6 class="fw-bold mb-3 text-muted">Connect with me</h6>
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        {% if user_info[6] %}  <!-- LinkedIn -->
+                <div class="social-links mb-5">
+                    <h6 class="fw-bold mb-3 text-muted text-center">Connect With Me</h6>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        {% if user_info[6] %}
                         <a href="{{ user_info[6] if user_info[6].startswith('http') else 'https://' ~ user_info[6] }}"
                            target="_blank"
-                           class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center">
-                            <i class="bi bi-linkedin me-1"></i> LinkedIn
+                           class="btn btn-outline-primary rounded-pill px-3 d-flex align-items-center social-btn">
+                            <i class="bi bi-linkedin me-2"></i> LinkedIn
                         </a>
                         {% endif %}
 
-                        {% if user_info[7] %}  <!-- GitHub -->
+                        {% if user_info[7] %}
                         <a href="{{ user_info[7] if user_info[7].startswith('http') else 'https://' ~ user_info[7] }}"
                            target="_blank"
-                           class="btn btn-outline-dark btn-sm rounded-pill d-flex align-items-center">
-                            <i class="bi bi-github me-1"></i> GitHub
+                           class="btn btn-outline-dark rounded-pill px-3 d-flex align-items-center social-btn">
+                            <i class="bi bi-github me-2"></i> GitHub
                         </a>
                         {% endif %}
 
-                        {% if user_info[8] %}  <!-- Twitter -->
+                        {% if user_info[8] %}
                         <a href="{{ user_info[8] if user_info[8].startswith('http') else 'https://' ~ user_info[8] }}"
                            target="_blank"
-                           class="btn btn-outline-info btn-sm rounded-pill d-flex align-items-center">
-                            <i class="bi bi-twitter me-1"></i> Twitter
+                           class="btn btn-outline-info rounded-pill px-3 d-flex align-items-center social-btn">
+                            <i class="bi bi-twitter me-2"></i> Twitter
                         </a>
                         {% endif %}
 
-                        {% if user_info[9] %}  <!-- Facebook -->
+                        {% if user_info[9] %}
                         <a href="{{ user_info[9] if user_info[9].startswith('http') else 'https://' ~ user_info[9] }}"
                            target="_blank"
-                           class="btn btn-outline-primary btn-sm rounded-pill d-flex align-items-center">
-                            <i class="bi bi-facebook me-1"></i> Facebook
+                           class="btn btn-outline-primary rounded-pill px-3 d-flex align-items-center social-btn">
+                            <i class="bi bi-facebook me-2"></i> Facebook
                         </a>
                         {% endif %}
 
-                        {% if user_info[10] %}  <!-- Instagram -->
+                        {% if user_info[10] %}
                         <a href="{{ user_info[10] if user_info[10].startswith('http') else 'https://' ~ user_info[10] }}"
                            target="_blank"
-                           class="btn btn-outline-danger btn-sm rounded-pill d-flex align-items-center">
-                            <i class="bi bi-instagram me-1"></i> Instagram
+                           class="btn btn-outline-danger rounded-pill px-3 d-flex align-items-center social-btn">
+                            <i class="bi bi-instagram me-2"></i> Instagram
                         </a>
                         {% endif %}
                     </div>
                 </div>
                 {% endif %}
 
-                {% if user_info and user_info[11] %}  <!-- Bio from user_info -->
-                <div class="bio-section mb-4">
-                    <div class="bg-light rounded-4 p-4">
-                        <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-badge me-2"></i>About Me</h6>
-                        <p class="text-muted mb-0 text-center">{{ user_info[11] }}</p>
+                <!-- Bio Section -->
+                {% if user_info and user_info[11] %}
+                <div class="bio-section mb-5">
+                    <div class="card border-0 bg-light rounded-4 overflow-hidden">
+                        <div class="card-header bg-transparent border-0 py-3">
+                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                <i class="bi bi-person-badge me-2"></i>About Me
+                            </h6>
+                        </div>
+                        <div class="card-body py-4">
+                            <p class="text-muted mb-0 lh-lg">{{ user_info[11] }}</p>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
 
-                <!-- Follow / Edit / Change Password Buttons -->
+                <!-- Action Buttons -->
                 {% if current_user.id != user[0] %}
-                <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}"
-                      method="POST">
-                    <button type="submit"
-                            class="btn btn-{{ 'outline-danger' if is_user_following else 'primary' }} rounded-pill px-4 mb-4 fw-bold">
-                        <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
-                        {{ 'Unfollow' if is_user_following else 'Follow' }}
-                    </button>
-                </form>
+                <div class="text-center mb-5">
+                    <form action="{{ url_for('follow' if not is_user_following else 'unfollow', user_id=user[0]) }}"
+                          method="POST" class="d-inline-block">
+                        <button type="submit"
+                                class="btn btn-{{ 'outline-danger' if is_user_following else 'primary' }} rounded-pill px-4 py-2 fw-bold action-btn">
+                            <i class="bi {{ 'bi-person-dash' if is_user_following else 'bi-person-plus' }} me-2"></i>
+                            {{ 'Unfollow' if is_user_following else 'Follow' }}
+                        </button>
+                    </form>
+                </div>
                 {% else %}
-                <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
-                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
-                        <i class="bi bi-pencil me-1"></i> Edit Profile
+                <div class="d-flex justify-content-center gap-3 mb-5 flex-wrap">
+                    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold action-btn">
+                        <i class="bi bi-pencil me-2"></i> Edit Profile
                     </a>
                     <a href="{{ url_for('change_password') }}"
-                       class="btn btn-outline-primary rounded-pill px-4 fw-bold">
-                        <i class="bi bi-key me-1"></i> Change Password
+                       class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold action-btn">
+                        <i class="bi bi-key me-2"></i> Change Password
                     </a>
                 </div>
                 {% endif %}
 
-                <!-- Stats -->
-                <div class="row g-3 mb-4">
-                    <div class="col-4">
-                        <div class="stats-card bg-primary bg-opacity-10 rounded-4 p-3 border-0">
-                            <h5 class="fw-bold text-primary mb-1">{{ posts_count }}</h5>
-                            <p class="small text-muted mb-0 fw-medium">Posts</p>
+                <!-- Stats Cards -->
+                <div class="stats-section mb-4">
+                    <div class="row g-4">
+                        <div class="col-4">
+                            <div class="stats-card card-hover bg-primary bg-opacity-10 rounded-4 p-4 border-0 text-center">
+                                <div class="stats-icon bg-primary bg-opacity-25 rounded-3 p-2 d-inline-flex mb-3">
+                                    <i class="bi bi-file-text text-primary fs-5"></i>
+                                </div>
+                                <h4 class="fw-bold text-primary mb-1">{{ posts_count }}</h4>
+                                <p class="small text-muted mb-0 fw-medium">Posts</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="stats-card bg-success bg-opacity-10 rounded-4 p-3 border-0">
-                            <h5 class="fw-bold text-success mb-1">{{ followers_count }}</h5>
-                            <p class="small text-muted mb-0 fw-medium">Followers</p>
+                        <div class="col-4">
+                            <div class="stats-card card-hover bg-success bg-opacity-10 rounded-4 p-4 border-0 text-center">
+                                <div class="stats-icon bg-success bg-opacity-25 rounded-3 p-2 d-inline-flex mb-3">
+                                    <i class="bi bi-people text-success fs-5"></i>
+                                </div>
+                                <h4 class="fw-bold text-success mb-1">{{ followers_count }}</h4>
+                                <p class="small text-muted mb-0 fw-medium">Followers</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="stats-card bg-info bg-opacity-10 rounded-4 p-3 border-0">
-                            <h5 class="fw-bold text-info mb-1">{{ following_count }}</h5>
-                            <p class="small text-muted mb-0 fw-medium">Following</p>
+                        <div class="col-4">
+                            <div class="stats-card card-hover bg-info bg-opacity-10 rounded-4 p-4 border-0 text-center">
+                                <div class="stats-icon bg-info bg-opacity-25 rounded-3 p-2 d-inline-flex mb-3">
+                                    <i class="bi bi-person-check text-info fs-5"></i>
+                                </div>
+                                <h4 class="fw-bold text-info mb-1">{{ following_count }}</h4>
+                                <p class="small text-muted mb-0 fw-medium">Following</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Footer Info -->
-                <div class="border-top pt-3 mt-3 text-muted small">
-                    <div class="row justify-content-center">
+                <div class="border-top pt-4 mt-4 text-muted small">
+                    <div class="row justify-content-center text-center">
                         <div class="col-12 col-md-6 mb-2 mb-md-0">
-                            <i class="bi bi-people me-2"></i>Member of Software Insight
+                            <i class="bi bi-people me-2"></i>Community Member
                         </div>
                         <div class="col-12 col-md-6">
                             <i class="bi bi-calendar me-2"></i>
-                            Joined {{ current_user.joined_date .strftime('%B %Y') }}
+                            Joined {{ current_user.joined_date.strftime('%B %Y') }}
                         </div>
                     </div>
                 </div>
@@ -248,6 +297,87 @@
         </div>
     </div>
 </div>
+
+<style>
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.background-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.avatar-img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.avatar-container:hover .avatar-img {
+    transform: scale(1.05);
+}
+
+.online-status {
+    width: 20px;
+    height: 20px;
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.social-btn {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+}
+
+.action-btn {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+}
+
+.info-icon, .stats-icon, .icon-wrapper {
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .icon-wrapper,
+.info-card:hover .info-icon,
+.stats-card:hover .stats-icon {
+    transform: scale(1.1);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.alert {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+</style>
 
 {% include "footer.html" %}
 {% endblock %}
