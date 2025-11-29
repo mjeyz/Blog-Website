@@ -602,7 +602,7 @@ body:not(.home) #mainNav .navbar-brand,
 body.scrolled #mainNav .navbar-brand,
 body:not(.home) #mainNav .navbar-nav > li.nav-item > a.nav-link,
 body.scrolled #mainNav .navbar-nav > li.nav-item > a.nav-link {
-  color: #212529 !important;
+  color: white !important;
 }
 
 body:not(.home) #mainNav .navbar-nav > li.nav-item > a.nav-link:hover,
