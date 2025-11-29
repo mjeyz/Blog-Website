@@ -1,6 +1,6 @@
 import os
-
 import psycopg2
+
 
 # DATABASE PATH
 DB_PATH = os.getenv("YOUR_DB_PATH")

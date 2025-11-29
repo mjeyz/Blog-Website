@@ -554,7 +554,7 @@ def edit_profile():
         # Fetch user_info data
         cur.execute("""
             SELECT Skill, Experience, Education, Occupation, Location,
-                   Website, LinkedIn, GitHub, Twitter, Facebook, Instagram, bio
+                   Website, LinkedIn, GitHub, Twitter, Facebook, Instagram, bio, profession
             FROM user_info WHERE user_id = %s
         """, (current_user.id,))
         info = cur.fetchone()
@@ -578,6 +578,7 @@ def edit_profile():
             form.facebook.data = info[9]
             form.instagram.data = info[10]
             form.bio.data = info[11]
+            form.profession.data = info[12]
 
     elif form.validate_on_submit():
         try:
@@ -617,7 +618,8 @@ def edit_profile():
                     Twitter = EXCLUDED.Twitter,
                     Facebook = EXCLUDED.Facebook,
                     Instagram = EXCLUDED.Instagram,
-                    bio = EXCLUDED.bio;
+                    bio = EXCLUDED.bio,
+                    profession = EXCLUDED.profession;
             """, (
                 form.skill.data,
                 form.experience.data,
@@ -631,7 +633,8 @@ def edit_profile():
                 form.facebook.data,
                 form.instagram.data,
                 form.bio.data,
-                current_user.id  # Added this missing parameter
+                form.profession.data,
+                current_user.id
             ))
 
             conn.commit()
