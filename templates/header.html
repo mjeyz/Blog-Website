@@ -71,10 +71,19 @@
                 <li class="nav-item dropdown ms-3">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ current_user.email | gravatar(size=40) }}"
-                             alt="avatar"
-                             class="rounded-circle border border-2 border-light me-2"
-                             width="40" height="40">
+                        {% if current_user.image_file and current_user.image_file != 'default.jpg' %}
+                            <img src="{{ url_for('static', filename='profile_pics/' + current_user.image_file) }}"
+                                 alt="avatar"
+                                 class="rounded-circle border border-2 border-light me-2"
+                                 width="40" height="40"
+                                 style="object-fit: cover;"
+                                 onerror="this.src='{{ current_user.email | gravatar(size=40) }}'">
+                        {% else %}
+                            <img src="{{ current_user.email | gravatar(size=40) }}"
+                                 alt="avatar"
+                                 class="rounded-circle border border-2 border-light me-2"
+                                 width="40" height="40">
+                        {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userDropdown">
                         <li>
@@ -118,4 +127,3 @@
 </body>
 </html>
 {% endblock %}
-
