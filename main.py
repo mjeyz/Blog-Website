@@ -64,8 +64,11 @@ def load_user(user_id):
     with psycopg2.connect(**DB_CONFIG) as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, email, password, first_name, last_name, username, joined_date
-            FROM users WHERE id = %s
+            SELECT u.id, u.email, u.password, u.first_name, u.last_name, 
+                   u.username, u.joined_date, ui.profile_image
+            FROM users u
+            LEFT JOIN user_info ui ON u.id = ui.user_id
+            WHERE u.id = %s
         """, (user_id,))
         user = cursor.fetchone()
 
@@ -77,7 +80,8 @@ def load_user(user_id):
                 first_name=user[3],
                 last_name=user[4],
                 username=user[5],
-                joined_date=user[6]
+                joined_date=user[6],
+                image_file=user[7] or "default.jpg"  # Add this line
             )
     return None
 
@@ -411,6 +415,17 @@ def profile(user_id):
                            followers_count=followers_count, following_count=following_count,
                            is_user_following=is_user_following, user_id=user_id
                            )
+
+
+@app.context_processor
+def utility_processor():
+    def get_current_user_profile_image():
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT profile_image FROM user_info WHERE user_id = %s", (current_user.id,))
+            result = cursor.fetchone()
+            return result[0] if result else "default.jpg"
+    return dict(get_current_user_profile_image=get_current_user_profile_image)
 
 
 @app.template_filter('file_exists')

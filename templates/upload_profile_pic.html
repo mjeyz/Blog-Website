@@ -3,7 +3,7 @@
 
 <div class="container py-5">
     <!-- Page Header -->
-    <div class="row justify-content-center mb-5">
+    <div class="row justify-content-center mb-5 mt-5">
         <div class="col-md-10 col-lg-8 text-center">
             <h1 class="display-5 fw-bold text-dark mb-3">Update Profile Picture</h1>
             <p class="lead text-muted">Upload a new photo to personalize your profile</p>
@@ -50,10 +50,20 @@
                     <div class="text-center mb-5">
                         <div class="position-relative d-inline-block">
                             <img id="profilePreview"
-                                 src="{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}?{{ current_user.image_file|random }}{% else %}{{ current_user.email | gravatar(size=160) }}{% endif %}"
+                                 src="{% if get_current_user_profile_image() != 'default.jpg' %}
+                                    {{ url_for('static', filename='profile_pics/' + get_current_user_profile_image()) }}
+                                  {% else %}
+                                    {{ current_user.email | gravatar(size=160) }}
+                                  {% endif %}"
+                                 data-original-src="{% if get_current_user_profile_image() != 'default.jpg' %}
+                                    {{ url_for('static', filename='profile_pics/' + get_current_user_profile_image()) }}
+                                  {% else %}
+                                    {{ current_user.email | gravatar(size=160) }}
+                                  {% endif %}"
                                  class="rounded-circle shadow-lg border border-4 border-white"
                                  alt="{{ current_user.first_name }}'s Profile Picture"
-                                 style="width: 160px; height: 160px; object-fit: cover;">
+                                 style="width: 160px; height: 160px; object-fit: cover;"
+                                 onerror="this.src='{{ current_user.email | gravatar(size=160) }}'">
                             <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2 border border-3 border-white">
                                 <i class="bi bi-camera-fill text-white fs-6"></i>
                             </div>
@@ -182,19 +192,19 @@
         }
     }
 
-    function clearFileSelection() {
-        const fileInput = document.getElementById('picture');
-        const fileInfo = document.getElementById('fileInfo');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const profilePreview = document.getElementById('profilePreview');
+function clearFileSelection() {
+    const fileInput = document.getElementById('picture');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const profilePreview = document.getElementById('profilePreview');
 
-        fileInput.value = '';
-        fileInfo.classList.add('d-none');
-        uploadBtn.disabled = true;
+    fileInput.value = '';
+    fileInfo.classList.add('d-none');
+    uploadBtn.disabled = true;
 
-        // Reset to original profile picture
-        profilePreview.src = "{% if current_user.image_file %}{{ url_for('static', filename='profile_pics/' ~ current_user.image_file) }}?{{ current_user.image_file|random }}{% else %}{{ current_user.email | gravatar(size=160) }}{% endif %}";
-    }
+    // Reset to original profile picture using data attribute
+    profilePreview.src = profilePreview.dataset.originalSrc;
+}
 
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
