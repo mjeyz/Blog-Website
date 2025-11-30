@@ -12,15 +12,15 @@ from flask_gravatar import Gravatar
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from database import DB_PATH, init_postgres_db, conn
+from database import DB_CONFIG, init_postgres_db, conn
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
 from functions import allowed_file, save_picture
 
 load_dotenv()
 
-# : Initialize Flask app and configure extensions
+# Initialize Flask app and configure extensions
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("YOUR_SECRET_KEY")
+app.config['SECRET_KEY'] = os.getenv("YOUR_SECRET_KEY") or "fallback-secret-key-12345"
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_PKG_TYPE'] = 'full'
 app.config['CKEDITOR_CDN_URL'] = 'https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js'
@@ -30,7 +30,7 @@ app.config['UPLOAD_FOLDER'] = 'static/profile_pics'
 Bootstrap5(app)
 ckeditor = CKEditor(app)
 
-# : Configure Flask-Login
+# Configure Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -47,30 +47,7 @@ gravatar = Gravatar(app,
 
 
 class User(UserMixin):
-    def __init__(
-            self,
-            id,
-            email,
-            password,
-            first_name,
-            last_name,
-            username=None,
-            profession=None,
-            location=None,
-            website=None,
-            linkedin=None,
-            github=None,
-            twitter=None,
-            facebook=None,
-            instagram=None,
-            bio=None,
-            joined_date=None,
-            image_file="default.jpg",
-            skill=None,
-            experience=None,
-            education=None,
-            occupation=None,
-    ):
+    def __init__(self, id, email, password, first_name, last_name, username=None, joined_date=None, image_file="default.jpg", **kwargs):
         self.id = id
         self.email = email
         self.password = password
@@ -78,32 +55,17 @@ class User(UserMixin):
         self.last_name = last_name
         self.image_file = image_file
         self.username = username or ""
-        self.profession = profession or ""
-        self.location = location or ""
-        self.website = website or ""
-        self.bio = bio or ""
         self.joined_date = joined_date
-        self.linkedin = linkedin or ""
-        self.github = github or ""
-        self.twitter = twitter or ""
-        self.facebook = facebook or ""
-        self.instagram = instagram or ""
-        self.skill = skill or ""
-        self.experience = experience or ""
-        self.education = education or ""
-        self.occupation = occupation or ""
-        self.joined_date = joined_date or ""
+
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    with psycopg2.connect(DB_PATH) as conn:
+    with psycopg2.connect(**DB_CONFIG) as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, email, password, first_name, last_name,
-                   username, joined_date
-            FROM users
-            WHERE id = %s
+            SELECT id, email, password, first_name, last_name, username, joined_date
+            FROM users WHERE id = %s
         """, (user_id,))
         user = cursor.fetchone()
 
@@ -120,24 +82,25 @@ def load_user(user_id):
     return None
 
 
-# : Initialize the database
+# Initialize the database
 init_postgres_db()
 
 
-# Create an admin-only decorator
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Ensure user is logged in before checking ID
         if not current_user.is_authenticated or current_user.id != 1:
-            return abort(403)  # Forbidden access
+            return abort(403)
         return f(*args, **kwargs)
 
     return decorated_function
 
 
+def get_db_connection():
+    return psycopg2.connect(**DB_CONFIG)
+
+
 # ------------ ROUTES -------------------- #
-# : Register a new user
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -148,22 +111,24 @@ def register():
         last_name = form.last_name.data
 
         hashed_password = generate_password_hash(password, method="pbkdf2:sha256", salt_length=8)
-        with psycopg2.connect(DB_PATH) as conn:
+
+        with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-            existing_user = cursor.fetchone()
-
-            if existing_user:
+            if cursor.fetchone():
                 flash("You are already registered, please login instead", "danger")
                 return redirect(url_for("login"))
 
-            cursor.execute("INSERT INTO users (email, password, first_name, last_name) VALUES (%s, %s, %s, %s)",
-                           (email, hashed_password, first_name, last_name))
+            cursor.execute(
+                "INSERT INTO users (email, password, first_name, last_name) VALUES (%s, %s, %s, %s)",
+                (email, hashed_password, first_name, last_name)
+            )
             conn.commit()
 
             cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             user_id = cursor.fetchone()[0]
-            user = User(id=user_id, email=email, password=hashed_password, first_name=first_name, last_name=last_name)
+            user = User(id=user_id, email=email, password=hashed_password,
+                        first_name=first_name, last_name=last_name)
 
             login_user(user, remember=form.remember.data, duration=timedelta(days=7))
             flash("Registration successful! Welcome.", "success")
@@ -172,7 +137,6 @@ def register():
     return render_template("register.html", form=form, current_user=current_user)
 
 
-# : Login an existing user
 @app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -180,166 +144,139 @@ def login():
         email = form.email.data
         password = form.password.data
 
-        with psycopg2.connect(DB_PATH) as conn:
+        with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, email, password, first_name, last_name FROM users WHERE email = %s", (email,))
+            cursor.execute(
+                "SELECT id, email, password, first_name, last_name FROM users WHERE email = %s",
+                (email,)
+            )
             user = cursor.fetchone()
 
             if not user:
-                flash("That email does not exist, please register first", category="danger")
+                flash("That email does not exist, please register first", "danger")
                 return redirect(url_for("register"))
 
-            stored_password = user[2]
-            if not check_password_hash(stored_password, password):
-                flash("Incorrect password, please try again", category="danger")
+            if not check_password_hash(user[2], password):
+                flash("Incorrect password, please try again", "danger")
                 return redirect(url_for("login"))
 
-            user_obj = User(id=user[0], email=user[1], password=user[2], first_name=user[3], last_name=user[4])
+            user_obj = User(id=user[0], email=user[1], password=user[2],
+                            first_name=user[3], last_name=user[4])
             login_user(user_obj, remember=form.remember.data, duration=timedelta(days=7))
             return redirect(url_for("get_all_posts"))
 
     return render_template("login.html", form=form, current_user=current_user)
 
 
-# : Logout the current user
 @app.route('/logout')
 def logout():
     logout_user()
-    flash("You have been logged out successfully.", category="warning")
+    flash("You have been logged out successfully.", "warning")
     return redirect(url_for('get_all_posts'))
 
 
-# : Display all blog posts
-@app.route('/', methods=["GET", "POST", "DELETE", "PUT", "PATCH"])
+@app.route('/')
 def get_all_posts():
-    with psycopg2.connect(DB_PATH) as conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM blog_post")
-        blog_post = cursor.fetchall()
+        cursor.execute("SELECT * FROM blog_post ORDER BY id DESC")
+        posts = cursor.fetchall()
 
-    posts = [blog for blog in blog_post]
-    return render_template("index.html", all_posts=posts, current_user=current_user, current_year=date.today().year)
+    return render_template("index.html", all_posts=posts, current_user=current_user,
+                           current_year=date.today().year)
 
 
-# : Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def show_post(post_id):
     form = CommentForm()
 
-    # Ensure only logged-in users can submit comments
     if form.validate_on_submit():
-        if not current_user.is_authenticated:  # Check if the user is logged in
-            flash("You must be logged in to comment.", "warning")
-            return redirect(url_for("login"))  # Redirect to login page
-
-        with psycopg2.connect(DB_PATH) as conn:
+        with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO comment (text, author_id, post_id) VALUES (%s, %s, %s)",
-                           (form.text.data, current_user.id, post_id))
+            cursor.execute(
+                "INSERT INTO comment (text, author_id, post_id) VALUES (%s, %s, %s)",
+                (form.text.data, current_user.id, post_id)
+            )
             conn.commit()
         flash("Comment added successfully!", "success")
         return redirect(url_for("show_post", post_id=post_id))
 
-    try:
-        with psycopg2.connect(DB_PATH) as conn:
-            cursor = conn.cursor()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT bp.id, bp.title, bp.subtitle, bp.date, bp.body, bp.img_url, 
+                   bp.author_id, u.first_name || ' ' || u.last_name AS author
+            FROM blog_post bp
+            JOIN users u ON bp.author_id = u.id
+            WHERE bp.id = %s
+        ''', (post_id,))
+        post = cursor.fetchone()
 
-            # Fetch the blog post details, including author_id
-            cursor.execute('''
-                SELECT blog_post.id, blog_post.title, blog_post.subtitle, blog_post.date,
-                       blog_post.body, blog_post.img_url, blog_post.author_id,
-                       users.first_name || ' ' || users.last_name AS author
-                FROM blog_post
-                JOIN users ON blog_post.author_id = users.id
-                WHERE blog_post.id = %s
-            ''', (post_id,))
-            post = cursor.fetchone()
+        if not post:
+            flash("Post not found.", "danger")
+            return redirect(url_for("get_all_posts"))
 
-            if post is None:
-                flash("Post not found.", "danger")
-                return redirect(url_for("get_all_posts"))
+        post_data = {
+            "id": post[0], "title": post[1], "subtitle": post[2], "date": post[3],
+            "body": post[4], "img_url": post[5], "author_id": post[6], "author": post[7]
+        }
 
-            post_data = {
-                "id": post[0],
-                "title": post[1],
-                "subtitle": post[2],
-                "date": post[3],
-                "body": post[4],
-                "img_url": post[5],
-                "author_id": post[6],
-                "author": post[7],
-            }
+        cursor.execute('''
+            SELECT c.text, u.email, u.id, u.first_name || ' ' || u.last_name AS commenter_name
+            FROM comment c
+            JOIN users u ON c.author_id = u.id
+            WHERE c.post_id = %s
+            ORDER BY c.id DESC
+        ''', (post_id,))
+        comments = [{"text": c[0], "email": c[1], "user_id": c[2], "commenter_name": c[3]}
+                    for c in cursor.fetchall()]
 
-            cursor.execute('''
-                SELECT comment.text, users.email, users.id, users.first_name || ' ' || users.last_name AS commenter_name
-                FROM comment
-                JOIN users ON comment.author_id = users.id
-                WHERE comment.post_id = %s
-                ORDER BY comment.id DESC
-            ''', (post_id,))
-            comments = cursor.fetchall()
-            comments_list = [{"text": c[0], "email": c[1], "user_id": c[2], "commenter_name": c[3]} for c in comments]
-    except Exception as e:
-        flash(f"Database error: {e}", "danger")
-        return redirect(url_for("get_all_posts"))
-
-    return render_template("post.html", post=post_data, comments=comments_list, current_user=current_user, form=form)
+    return render_template("post.html", post=post_data, comments=comments,
+                           current_user=current_user, form=form)
 
 
-# : Use a decorator so only an admin user can create a new post
 @app.route("/new-post", methods=["GET", "POST"])
 @login_required
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
-        with psycopg2.connect(DB_PATH) as conn:
+        with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO blog_post (title, subtitle, date, body, author, img_url, author_id)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             ''', (
-                form.title.data,
-                form.subtitle.data,
-                date.today().strftime("%B %d, %Y"),
-                form.body.data,
-                form.author.data,
-                form.img_url.data,
-                current_user.id
-            ))  # Add the author_id here
-
+                form.title.data, form.subtitle.data, date.today().strftime("%B %d, %Y"),
+                form.body.data, form.author.data, form.img_url.data, current_user.id
+            ))
             conn.commit()
-
         return redirect(url_for("get_all_posts"))
 
     return render_template("make-post.html", form=form, current_user=current_user)
 
 
-# : Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @admin_only
 def edit_post(post_id):
     form = CreatePostForm()
 
-    with psycopg2.connect(DB_PATH) as conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM blog_post WHERE id = %s", (post_id,))
         post = cursor.fetchone()
-        if post is None:
+
+        if not post:
             return "Post not found", 404
 
-        if request.method == "POST" and form.validate_on_submit():
-            cursor.execute(
-                """
-                UPDATE blog_post
-                SET title = %s, body = %s, author = %s, img_url = %s, subtitle = %s
-                WHERE id = %s
-                """,
-                (form.title.data, form.body.data, form.author.data, form.img_url.data, form.subtitle.data, post_id)
-            )
-
+        if form.validate_on_submit():
+            cursor.execute('''
+                UPDATE blog_post 
+                SET title=%s, body=%s, author=%s, img_url=%s, subtitle=%s 
+                WHERE id=%s
+            ''', (form.title.data, form.body.data, form.author.data,
+                  form.img_url.data, form.subtitle.data, post_id))
             conn.commit()
-
             flash("Post updated successfully!", "success")
             return redirect(url_for("show_post", post_id=post_id))
 
@@ -352,25 +289,15 @@ def edit_post(post_id):
     return render_template("make-post.html", form=form, is_edit=True, current_user=current_user)
 
 
-# : Use a decorator so only an admin user can delete a post
 @app.route("/delete/<int:post_id>", methods=["POST"])
 @admin_only
 def delete_post(post_id):
-    with psycopg2.connect(DB_PATH) as conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM blog_post WHERE id = %s", (post_id,))
-        post = cursor.fetchone()
-
-        if post is None:
-            flash("Post not found.", "error")
-            return redirect(url_for("get_all_posts"))
-
-        # Delete the post
         cursor.execute("DELETE FROM blog_post WHERE id = %s", (post_id,))
         conn.commit()
-
-        flash("Post deleted successfully!", "success")
-        return redirect(url_for("get_all_posts"))
+    flash("Post deleted successfully!", "success")
+    return redirect(url_for("get_all_posts"))
 
 
 @app.route("/about")
@@ -378,12 +305,11 @@ def about():
     return render_template("about.html", current_user=current_user)
 
 
-@app.route("/download", methods=["GET", "POST"])
+@app.route("/download")
 def download():
     return send_from_directory("static", path="files/MudasirAbbas.pdf", as_attachment=True)
 
 
-# : Contact form to send email
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
@@ -394,33 +320,26 @@ def contact():
 
         if not email:
             flash("Please provide your email address.", "danger")
+            return render_template("contact.html", current_user=current_user)
+
+        smtp_email = os.getenv("Your_SMTP_EMAIL")
+        smtp_password = os.getenv("Your_SMTP_PASSWORD")
+
+        if not smtp_email or not smtp_password:
+            flash("Server email configuration is missing.", "danger")
         else:
-            smtp_email = os.getenv("Your_SMTP_EMAIL")
-            smtp_password = os.getenv("Your_SMTP_PASSWORD")
-            if not smtp_email or not smtp_password:
-                flash("Server email configuration is missing.", "danger")
-            else:
-                connection = None
-                try:
-                    connection = smtplib.SMTP("smtp.gmail.com", 587)
+            try:
+                with smtplib.SMTP("smtp.gmail.com", 587) as connection:
                     connection.starttls()
-                    connection.login(user=smtp_email, password=smtp_password)
-                    connection.sendmail(from_addr=email,
-                                        to_addrs=smtp_email,
-                                        msg=f"subject:User Alert\n\n"
-                                            f"Name: {name}\n"
-                                            f"Email: {email}\n"
-                                            f"Phone: {phone}\n"
-                                            f"Message: {message}\n"
-                                            f"Now it's time to contect him")
-                except smtplib.SMTPException as e:
-                    print(f"Smtp Error: {e}")
-                else:
-                    print("Successfully Sent your message")
-                    flash("Message Sent Successfully", "success")
-                finally:
-                    if connection:
-                        connection.close()
+                    connection.login(smtp_email, smtp_password)
+                    connection.sendmail(
+                        from_addr=email,
+                        to_addrs=smtp_email,
+                        msg=f"Subject: User Alert\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}"
+                    )
+                flash("Message Sent Successfully", "success")
+            except smtplib.SMTPException as e:
+                flash(f"Failed to send email: {e}", "danger")
 
     return render_template("contact.html", current_user=current_user)
 
@@ -429,13 +348,13 @@ def contact():
 @app.route("/follow/<int:user_id>", methods=["POST"])
 @login_required
 def follow(user_id):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user.id, user_id))
-    exists = cur.fetchone()
-    if not exists:
-        cur.execute("INSERT INTO followers (follower_id, followed_id) VALUES (%s, %s)", (current_user.id, user_id))
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO followers (follower_id, followed_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
+            (current_user.id, user_id)
+        )
         conn.commit()
-    cur.close()
     flash("You are now following this user!", "success")
     return redirect(url_for("profile", user_id=user_id))
 
@@ -443,10 +362,13 @@ def follow(user_id):
 @app.route("/unfollow/<int:user_id>", methods=["POST"])
 @login_required
 def unfollow(user_id):
-    cur = conn.cursor()
-    cur.execute("DELETE FROM followers WHERE follower_id=%s AND followed_id=%s", (current_user.id, user_id))
-    conn.commit()
-    cur.close()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM followers WHERE follower_id=%s AND followed_id=%s",
+            (current_user.id, user_id)
+        )
+        conn.commit()
     flash("You unfollowed this user.", "info")
     return redirect(url_for("profile", user_id=user_id))
 
@@ -454,86 +376,70 @@ def unfollow(user_id):
 @app.route("/profile/<int:user_id>")
 @login_required
 def profile(user_id):
-    cur = conn.cursor()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
 
-    cur.execute("""
-        SELECT id, first_name, last_name, email, username
-        FROM users WHERE id=%s
-    """, (user_id,))
-    user = cur.fetchone()
+        cursor.execute("SELECT id, first_name, last_name, email, username FROM users WHERE id=%s", (user_id,))
+        user = cursor.fetchone()
 
-    if not user:
-        flash("User not found!", "danger")
-        return redirect(url_for("home"))
+        if not user:
+            flash("User not found!", "danger")
+            return redirect(url_for("get_all_posts"))
 
-    # Fetch user_info data
-    cur.execute("""
-        SELECT Skill, Experience, Education, Occupation, Location,
-               Website, LinkedIn, GitHub, Twitter, Facebook, Instagram, bio
-        FROM user_info WHERE user_id=%s
-    """, (user_id,))
-    user_info = cur.fetchone()
+        cursor.execute('''
+            SELECT skill, experience, education, occupation, location, website, 
+                   linkedin, github, twitter, facebook, instagram, bio, profile_image
+            FROM user_info WHERE user_id=%s
+        ''', (user_id,))
+        user_info = cursor.fetchone()
 
-    # Count posts, followers, and following
-    cur.execute("SELECT COUNT(*) FROM blog_post WHERE author_id=%s", (user_id,))
-    posts_count = cur.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM blog_post WHERE author_id=%s", (user_id,))
+        posts_count = cursor.fetchone()[0]
 
-    cur.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
-    followers_count = cur.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM followers WHERE followed_id=%s", (user_id,))
+        followers_count = cursor.fetchone()[0]
 
-    cur.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
-    following_count = cur.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM followers WHERE follower_id=%s", (user_id,))
+        following_count = cursor.fetchone()[0]
 
-    # Check if the current user already follows this user
-    cur.execute("SELECT 1 FROM followers WHERE follower_id=%s AND followed_id=%s",
-                (current_user.id, user_id))
-    is_user_following = cur.fetchone() is not None
+        cursor.execute("SELECT 1 FROM followers WHERE follower_id=%s AND followed_id=%s",
+                       (current_user.id, user_id))
+        is_user_following = cursor.fetchone() is not None
 
-    cur.close()
     return render_template("profile.html",
-                           user=user,
-                           user_info=user_info,  # Pass the raw user_info tuple
-                           posts_count=posts_count,
-                           followers_count=followers_count,
-                           following_count=following_count,
-                           is_user_following=is_user_following,
-                           user_id=user_id)
+                           user=user, user_info=user_info, posts_count=posts_count,
+                           followers_count=followers_count, following_count=following_count,
+                           is_user_following=is_user_following, user_id=user_id
+                           )
 
 
 @app.route('/upload-profile-pic', methods=['GET', 'POST'])
 @login_required
 def upload_profile_pic():
     if request.method == 'POST':
-
-        # Check if file input exists
         if 'picture' not in request.files:
             flash('No file selected.', 'danger')
             return redirect(url_for('profile', user_id=current_user.id))
 
         file = request.files['picture']
-
-        # Check if filename is empty
         if file.filename == '':
             flash('No file selected.', 'danger')
             return redirect(url_for('profile', user_id=current_user.id))
 
-        # Check if allowed image type
         if file and allowed_file(file.filename):
-
-            # Save picture
             filename = save_picture(file)
-            current_user.image_file = filename
-
-            # IMPORTANT: Save to database
-            conn.commit()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO user_info (user_id, profile_image) VALUES (%s, %s) ON CONFLICT (user_id) DO UPDATE SET profile_image = EXCLUDED.profile_image",
+                    (current_user.id, filename)
+                )
+                conn.commit()
             flash('Your profile picture has been updated!', 'success')
             return redirect(url_for('profile', user_id=current_user.id))
-
         else:
             flash('Please upload a valid image file (PNG, JPG, JPEG, GIF).', 'danger')
-            return redirect(url_for('profile', user_id=current_user.id))
 
-    # GET request → show upload form
     return render_template('upload_profile_pic.html', current_user=current_user)
 
 
@@ -541,114 +447,72 @@ def upload_profile_pic():
 @login_required
 def edit_profile():
     form = EditProfileForm()
-    cur = conn.cursor()
 
-    if request.method == "GET":
-        # Fetch users table data
-        cur.execute("""
-            SELECT username, first_name, last_name, email
-            FROM users WHERE id = %s
-        """, (current_user.id,))
-        user = cur.fetchone()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
 
-        # Fetch user_info data
-        cur.execute("""
-            SELECT Skill, Experience, Education, Occupation, Location,
-                   Website, LinkedIn, GitHub, Twitter, Facebook, Instagram, bio, profession
-            FROM user_info WHERE user_id = %s
-        """, (current_user.id,))
-        info = cur.fetchone()
+        if request.method == "GET":
+            cursor.execute("SELECT username, first_name, last_name, email FROM users WHERE id = %s", (current_user.id,))
+            user = cursor.fetchone()
+            if user:
+                form.username.data = user[0]
+                form.first_name.data = user[1]
+                form.last_name.data = user[2]
+                form.email.data = user[3]
 
-        if user:
-            form.username.data = user[0]
-            form.first_name.data = user[1]
-            form.last_name.data = user[2]
-            form.email.data = user[3]
+            cursor.execute('''
+                SELECT skill, experience, education, occupation, location, website, 
+                       linkedin, github, twitter, facebook, instagram, bio, profession
+                FROM user_info WHERE user_id = %s
+            ''', (current_user.id,))
+            info = cursor.fetchone()
+            if info:
+                form.skill.data = info[0]
+                form.experience.data = info[1]
+                form.education.data = info[2]
+                form.occupation.data = info[3]
+                form.location.data = info[4]
+                form.website.data = info[5]
+                form.linkedin.data = info[6]
+                form.github.data = info[7]
+                form.twitter.data = info[8]
+                form.facebook.data = info[9]
+                form.instagram.data = info[10]
+                form.bio.data = info[11]
+                form.profession.data = info[12]
 
-        if info:
-            form.skill.data = info[0]
-            form.experience.data = info[1]
-            form.education.data = info[2]
-            form.occupation.data = info[3]
-            form.location.data = info[4]
-            form.website.data = info[5]
-            form.linkedin.data = info[6]
-            form.github.data = info[7]
-            form.twitter.data = info[8]
-            form.facebook.data = info[9]
-            form.instagram.data = info[10]
-            form.bio.data = info[11]
-            form.profession.data = info[12]
+        elif form.validate_on_submit():
+            try:
+                cursor.execute('''
+                    UPDATE users SET username=%s, first_name=%s, last_name=%s, email=%s WHERE id=%s
+                ''', (form.username.data, form.first_name.data, form.last_name.data, form.email.data, current_user.id))
 
-    elif form.validate_on_submit():
-        try:
-            # Update users
-            cur.execute("""
-                UPDATE users
-                SET username = %s,
-                    first_name = %s,
-                    last_name = %s,
-                    email = %s
-                WHERE id = %s
-            """, (
-                form.username.data,
-                form.first_name.data,
-                form.last_name.data,
-                form.email.data,
-                current_user.id
-            ))
-
-            cur.execute("""
-                INSERT INTO user_info (
-                    Skill, Experience, Education, Occupation, Location,
-                    Website, LinkedIn, GitHub, Twitter, Facebook,
-                    Instagram, bio, user_id
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (user_id)
-                DO UPDATE SET
-                    Skill = EXCLUDED.Skill,
-                    Experience = EXCLUDED.Experience,
-                    Education = EXCLUDED.Education,
-                    Occupation = EXCLUDED.Occupation,
-                    Location = EXCLUDED.Location,
-                    Website = EXCLUDED.Website,
-                    LinkedIn = EXCLUDED.LinkedIn,
-                    GitHub = EXCLUDED.GitHub,
-                    Twitter = EXCLUDED.Twitter,
-                    Facebook = EXCLUDED.Facebook,
-                    Instagram = EXCLUDED.Instagram,
-                    bio = EXCLUDED.bio,
-                    profession = EXCLUDED.profession;
-            """, (
-                form.skill.data,
-                form.experience.data,
-                form.education.data,
-                form.occupation.data,
-                form.location.data,
-                form.website.data,
-                form.linkedin.data,
-                form.github.data,
-                form.twitter.data,
-                form.facebook.data,
-                form.instagram.data,
-                form.bio.data,
-                form.profession.data,
-                current_user.id
-            ))
-
-            conn.commit()
-            flash("Profile updated successfully!", "success")
-            return redirect(url_for("profile", user_id=current_user.id))
-
-        except Exception as e:
-            conn.rollback()
-            flash(f"Error updating profile: {str(e)}", "error")
+                cursor.execute('''
+                    INSERT INTO user_info (skill, experience, education, occupation, location, website,
+                            linkedin, github, twitter, facebook, instagram, bio, profession, user_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (user_id) DO UPDATE SET
+                        skill=EXCLUDED.skill, experience=EXCLUDED.experience, education=EXCLUDED.education,
+                        occupation=EXCLUDED.occupation, location=EXCLUDED.location, website=EXCLUDED.website,
+                        linkedin=EXCLUDED.linkedin, github=EXCLUDED.github, twitter=EXCLUDED.twitter,
+                        facebook=EXCLUDED.facebook, instagram=EXCLUDED.instagram, bio=EXCLUDED.bio,
+                        profession=EXCLUDED.profession
+                ''', (
+                    form.skill.data, form.experience.data, form.education.data, form.occupation.data,
+                    form.location.data, form.website.data, form.linkedin.data, form.github.data,
+                    form.twitter.data, form.facebook.data, form.instagram.data, form.bio.data,
+                    form.profession.data, current_user.id
+                ))
+                conn.commit()
+                flash("Profile updated successfully!", "success")
+                return redirect(url_for("profile", user_id=current_user.id))
+            except Exception as e:
+                conn.rollback()
+                flash(f"Error updating profile: {str(e)}", "error")
 
     return render_template("edit_profile.html", user=current_user, form=form)
 
 
-# ---- Change Password Route ---- #
 @app.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
@@ -657,7 +521,11 @@ def change_password():
         if not check_password_hash(current_user.password, form.current_password.data):
             flash('Current password is incorrect.', 'danger')
         else:
-            current_user.password = generate_password_hash(form.new_password.data)
+            new_hashed_password = generate_password_hash(form.new_password.data)
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("UPDATE users SET password=%s WHERE id=%s", (new_hashed_password, current_user.id))
+                conn.commit()
             flash('Your password has been updated successfully!', 'success')
             return redirect(url_for('profile', user_id=current_user.id))
     return render_template('change_password.html', form=form)
