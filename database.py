@@ -1,4 +1,5 @@
 import os
+
 import psycopg2
 from dotenv import load_dotenv
 
@@ -15,6 +16,7 @@ DB_CONFIG = {
 
 # Create connection
 conn = psycopg2.connect(**DB_CONFIG)
+
 
 def init_postgres_db():
     with conn.cursor() as cur:
@@ -87,5 +89,6 @@ def init_postgres_db():
             )
         """)
         conn.commit()
+
 
 init_postgres_db()

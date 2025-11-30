@@ -1,26 +1,37 @@
 import os
 import secrets
+
 from PIL import Image
 
 
+# Ensure the upload directory exists
+def ensure_upload_dir():
+    upload_dir = 'static/profile_pics'
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    return upload_dir
+
+
 # ------------Function to save and resize image----------------
-def save_picture(form_picture):
-    from main import app  # Import inside the function
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
+
+def save_picture(file):
+    # Ensure upload directory exists
+    upload_dir = ensure_upload_dir()
+
+    # Generate random filename
     random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.config['UPLOAD_FOLDER'], picture_fn)
+    _, file_extension = os.path.splitext(file.filename)
+    picture_filename = random_hex + file_extension
+    picture_path = os.path.join(upload_dir, picture_filename)
 
-    # Resize image
-    output_size = (200, 200)
-    i = Image.open(form_picture)
+    # Resize and save image
+    output_size = (125, 125)
+    i = Image.open(file)
     i.thumbnail(output_size)
     i.save(picture_path)
 
-    return picture_fn
-
-
-def allowed_file(filename):
-    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+    return picture_filename

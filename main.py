@@ -12,7 +12,7 @@ from flask_gravatar import Gravatar
 from flask_login import login_user, login_required, logout_user, LoginManager, UserMixin, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from database import DB_CONFIG, init_postgres_db, conn
+from database import DB_CONFIG, init_postgres_db
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, EditProfileForm, ChangePasswordForm
 from functions import allowed_file, save_picture
 
@@ -47,7 +47,8 @@ gravatar = Gravatar(app,
 
 
 class User(UserMixin):
-    def __init__(self, id, email, password, first_name, last_name, username=None, joined_date=None, image_file="default.jpg", **kwargs):
+    def __init__(self, id, email, password, first_name, last_name, username=None, joined_date=None,
+                 image_file="default.jpg", **kwargs):
         self.id = id
         self.email = email
         self.password = password
@@ -56,7 +57,6 @@ class User(UserMixin):
         self.image_file = image_file
         self.username = username or ""
         self.joined_date = joined_date
-
 
 
 @login_manager.user_loader
@@ -413,6 +413,11 @@ def profile(user_id):
                            )
 
 
+@app.template_filter('file_exists')
+def file_exists_filter(filename):
+    return os.path.exists(filename)
+
+
 @app.route('/upload-profile-pic', methods=['GET', 'POST'])
 @login_required
 def upload_profile_pic():
@@ -422,23 +427,35 @@ def upload_profile_pic():
             return redirect(url_for('profile', user_id=current_user.id))
 
         file = request.files['picture']
+
         if file.filename == '':
             flash('No file selected.', 'danger')
             return redirect(url_for('profile', user_id=current_user.id))
 
         if file and allowed_file(file.filename):
-            filename = save_picture(file)
-            with get_db_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    "INSERT INTO user_info (user_id, profile_image) VALUES (%s, %s) ON CONFLICT (user_id) DO UPDATE SET profile_image = EXCLUDED.profile_image",
-                    (current_user.id, filename)
-                )
-                conn.commit()
-            flash('Your profile picture has been updated!', 'success')
-            return redirect(url_for('profile', user_id=current_user.id))
+            try:
+                filename = save_picture(file)
+
+                # Update database
+                with get_db_connection() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT INTO user_info (user_id, profile_image) 
+                        VALUES (%s, %s) 
+                        ON CONFLICT (user_id) 
+                        DO UPDATE SET profile_image = EXCLUDED.profile_image
+                    """, (current_user.id, filename))
+                    conn.commit()
+
+                flash('Your profile picture has been updated!', 'success')
+                return redirect(url_for('profile', user_id=current_user.id))
+
+            except Exception as e:
+                flash(f'Error uploading image: {str(e)}', 'danger')
+                return redirect(url_for('profile', user_id=current_user.id))
         else:
             flash('Please upload a valid image file (PNG, JPG, JPEG, GIF).', 'danger')
+            return redirect(url_for('profile', user_id=current_user.id))
 
     return render_template('upload_profile_pic.html', current_user=current_user)
 
