@@ -420,11 +420,21 @@ def profile(user_id):
 @app.context_processor
 def utility_processor():
     def get_current_user_profile_image():
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT profile_image FROM user_info WHERE user_id = %s", (current_user.id,))
-            result = cursor.fetchone()
-            return result[0] if result else "default.jpg"
+        if not current_user.is_authenticated:
+            return "default.jpg"
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT profile_image FROM user_info WHERE user_id = %s", (current_user.id,))
+                result = cursor.fetchone()
+                # Double check for None values
+                if result and result[0] is not None and result[0] != '':
+                    return str(result[0])  # Ensure it's a string
+                else:
+                    return "default.jpg"
+        except Exception as e:
+            print(f"Error getting profile image: {e}")
+            return "default.jpg"
     return dict(get_current_user_profile_image=get_current_user_profile_image)
 
 
