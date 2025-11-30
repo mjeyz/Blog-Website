@@ -72,10 +72,19 @@
                             <!-- Commenter Image -->
                             <div class="commenterImage me-3">
                                 <a href="{{ url_for('profile', user_id=comment.user_id) }}">
-                                    <img src="{{ comment.email | gravatar(size=50) }}"
-                                         alt="{{ comment.commenter_name }}'s Avatar"
-                                         class="rounded-circle border"
-                                         style="vertical-align: middle;">
+                                    {% set commenter_profile_image = get_user_profile_image(comment.user_id) %}
+                                    {% if commenter_profile_image != 'default.jpg' %}
+                                        <img src="{{ url_for('static', filename='profile_pics/' + commenter_profile_image) }}"
+                                             alt="{{ comment.commenter_name }}'s Avatar"
+                                             class="rounded-circle border"
+                                             style="vertical-align: middle; width: 50px; height: 50px; object-fit: cover;"
+                                             onerror="this.src='{{ comment.email | gravatar(size=50) }}'">
+                                    {% else %}
+                                        <img src="{{ comment.email | gravatar(size=50) }}"
+                                             alt="{{ comment.commenter_name }}'s Avatar"
+                                             class="rounded-circle border"
+                                             style="vertical-align: middle;">
+                                    {% endif %}
                                 </a>
                             </div>
 
