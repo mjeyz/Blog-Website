@@ -72,14 +72,14 @@ class CleanBlogApp {
     element.style.transform = `scale(${scale})`;
   }
 
-  // ⭐ PASSWORD TOGGLE FIXED & WORKING
+  // Password toggle visibility
   setupPasswordToggles() {
     const pwdField = document.querySelector('input[type="password"]');
     if (!pwdField) return;
 
-    // Create button
+    // Create toggle button
     const toggleBtn = document.createElement('span');
-    toggleBtn.className = 'position-absolute cursor-pointer';
+    toggleBtn.className = 'position-absolute cursor-pointer password-toggle';
     toggleBtn.style.right = '15px';
     toggleBtn.style.top = '75%';
     toggleBtn.style.transform = 'translateY(-50%)';
@@ -91,13 +91,12 @@ class CleanBlogApp {
 
     // Toggle visibility
     toggleBtn.addEventListener('click', () => {
-      const type = pwdField.type === 'password' ? 'text' : 'password';
-      pwdField.type = type;
+      const isPassword = pwdField.type === 'password';
+      pwdField.type = isPassword ? 'text' : 'password';
 
-      toggleBtn.innerHTML =
-        type === 'password'
-          ? '<i class="bi bi-eye-slash"></i>'
-          : '<i class="bi bi-eye"></i>';
+      toggleBtn.innerHTML = isPassword
+        ? '<i class="bi bi-eye"></i>'
+        : '<i class="bi bi-eye-slash"></i>';
     });
   }
 
@@ -121,35 +120,101 @@ class CleanBlogApp {
 
     if (!fileInput || !profilePreview) return;
 
+    // Store original image source
     fileInput.dataset.originalSrc = profilePreview.src;
 
+    // Setup event listeners
     fileInput.addEventListener('change', (event) => this.handleFileSelect(event));
-
     this.setupImagePreview(profilePreview, fileInput);
+
+    // Add loading state to form submission
+    const form = fileInput.closest('form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadText = document.getElementById('uploadText');
+        const uploadSpinner = document.getElementById('uploadSpinner');
+
+        if (uploadBtn) {
+          uploadBtn.disabled = true;
+          if (uploadText) uploadText.textContent = 'Uploading...';
+          if (uploadSpinner) uploadSpinner.classList.remove('d-none');
+        }
+      });
+    }
   }
 
   handleFileSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      this.showAlert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
-      this.clearFileSelection();
+    // Validate file
+    if (!this.validateFile(file)) {
       return;
+    }
+
+    // Update UI and preview
+    this.updateFileInfo(file);
+    this.previewImage(file);
+
+    // Show success message
+    this.showAlert('File selected successfully. Click "Upload Photo" to save.', 'success');
+  }
+
+  validateFile(file) {
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    if (!validTypes.includes(file.type)) {
+      this.showAlert('Please select a valid image file (JPG, PNG, GIF, or WEBP)', 'danger');
+      this.clearFileSelection();
+      return false;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      this.showAlert('File size must be less than 5MB');
+      this.showAlert('File size must be less than 5MB', 'danger');
       this.clearFileSelection();
-      return;
+      return false;
     }
 
-    this.updateFileInfo(file);
-    this.previewImage(file);
+    return true;
   }
 
-  showAlert(message) { alert(message); }
+  showAlert(message, type = 'info') {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.custom-alert');
+    existingAlerts.forEach(alert => alert.remove());
+
+    // Create new alert
+    const alert = document.createElement('div');
+    alert.className = `custom-alert alert alert-${type} alert-dismissible fade show rounded-3 shadow-sm`;
+    alert.innerHTML = `
+      <div class="d-flex align-items-center">
+        <i class="bi bi-${type === 'success' ? 'check-circle-fill' :
+                         type === 'danger' ? 'exclamation-triangle-fill' :
+                         'info-circle-fill'} me-2"></i>
+        <span class="fw-medium">${message}</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    // Add styles
+    Object.assign(alert.style, {
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      zIndex: '1060',
+      minWidth: '300px'
+    });
+
+    document.body.appendChild(alert);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.remove();
+      }
+    }, 5000);
+  }
 
   updateFileInfo(file) {
     const fileNameEl = document.getElementById('fileName');
@@ -183,7 +248,7 @@ class CleanBlogApp {
     if (uploadBtn) uploadBtn.disabled = true;
 
     if (profilePreview && fileInput) {
-      profilePreview.src = fileInput.dataset.originalSrc;
+      profilePreview.src = fileInput.dataset.originalSrc || profilePreview.src;
     }
   }
 
@@ -226,6 +291,3 @@ class CleanBlogApp {
 document.addEventListener('DOMContentLoaded', () => {
   new CleanBlogApp();
 });
-
-
-
