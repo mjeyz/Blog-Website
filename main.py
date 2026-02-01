@@ -74,7 +74,7 @@ class User(UserMixin):
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or current_user.id != 1:
+        if not current_user.is_authenticated or not current_user.is_admin:
             return abort(403)
         return f(*args, **kwargs)
     return decorated_function
@@ -275,7 +275,7 @@ def add_new_post():
             cur.execute(
                 "INSERT INTO blog_post (title, subtitle, body, img_url, author, date, author_id) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (form.title.data, form.subtitle.data, form.body.data, form.img_url.data,
-                 current_user.first_name + ' ' + current_user.last_name, date.today().strftime("%B %d, %Y"), current_user.id)
+                 f"{current_user.first_name} {current_user.last_name}", date.today().strftime("%B %d, %Y"), current_user.id)
             )
             conn.commit()
         

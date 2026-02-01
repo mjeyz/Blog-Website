@@ -1,8 +1,13 @@
 import os
 import sys
+import logging
 
 import psycopg2
 from dotenv import load_dotenv
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -27,8 +32,8 @@ else:
         # Create connection
         conn = psycopg2.connect(**DB_CONFIG)
     except psycopg2.OperationalError as e:
-        print(f"Warning: Could not connect to database: {e}", file=sys.stderr)
-        print("The application will not work properly without a database connection.", file=sys.stderr)
+        logger.error(f"Could not connect to database: {e}")
+        logger.warning("The application will not work properly without a database connection.")
         # Create a mock connection object to allow import
         conn = None
 
@@ -36,7 +41,7 @@ else:
 def init_postgres_db():
     """Initialize PostgreSQL database tables."""
     if conn is None:
-        print("Warning: No database connection. Cannot initialize tables.", file=sys.stderr)
+        logger.warning("No database connection. Cannot initialize tables.")
         return
         
     with conn.cursor() as cur:

@@ -207,10 +207,21 @@ Blog-Website/
 
 ## First Admin User
 
-The first user to register (user with ID = 1) will automatically become an admin with privileges to:
+To set up an admin user, you need to manually update the database after creating a user account:
+
+1. Register a new user account through the website
+2. Connect to your database and run:
+   ```sql
+   UPDATE users SET is_admin = TRUE WHERE id = 1;
+   ```
+   (Replace `1` with the user ID you want to make admin)
+
+Admin users have privileges to:
 - Create new posts
 - Edit any post
 - Delete any post
+
+**Note:** For security reasons, there is no automatic admin assignment. You must manually set the `is_admin` flag in the database.
 
 ## Contributing
 
