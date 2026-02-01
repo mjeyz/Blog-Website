@@ -1,9 +1,9 @@
 import os
+import hashlib
 from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
-from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -24,15 +24,19 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Initialize Gravatar
-gravatar = Gravatar(app,
-                    size=100,
-                    rating='g',
-                    default='retro',
-                    force_default=False,
-                    force_lower=False,
-                    use_ssl=False,
-                    base_url=None)
+
+# Gravatar helper function
+def gravatar_url(email, size=100, default='retro'):
+    """Generate Gravatar URL from email."""
+    email_hash = hashlib.md5(email.lower().strip().encode('utf-8')).hexdigest()
+    return f"https://www.gravatar.com/avatar/{email_hash}?s={size}&d={default}"
+
+
+# Add gravatar filter to Jinja2
+@app.template_filter('gravatar')
+def gravatar_filter(email, size=100):
+    """Template filter for Gravatar URLs."""
+    return gravatar_url(email, size)
 
 
 # User loader for Flask-Login

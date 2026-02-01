@@ -1,4 +1,5 @@
 import os
+import sys
 
 import psycopg2
 from dotenv import load_dotenv
@@ -6,19 +7,38 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database configuration from environment variables
-DB_CONFIG = {
-    'dbname': os.getenv("DB_NAME", "postgres"),
-    'user': os.getenv("DB_USER", "postgres"),
-    'password': os.getenv("DB_PASSWORD", "9992"),
-    'host': os.getenv("DB_HOST", "localhost"),
-    'port': os.getenv("DB_PORT", "5432")
-}
+# Support both individual variables and DATABASE_URL (for Heroku, Railway, etc.)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Create connection
-conn = psycopg2.connect(**DB_CONFIG)
+if DATABASE_URL:
+    # If DATABASE_URL is provided, use it directly
+    conn = psycopg2.connect(DATABASE_URL)
+else:
+    # Otherwise, use individual configuration variables
+    DB_CONFIG = {
+        'dbname': os.getenv("DB_NAME", "postgres"),
+        'user': os.getenv("DB_USER", "postgres"),
+        'password': os.getenv("DB_PASSWORD", "9992"),
+        'host': os.getenv("DB_HOST", "localhost"),
+        'port': os.getenv("DB_PORT", "5432")
+    }
+    
+    try:
+        # Create connection
+        conn = psycopg2.connect(**DB_CONFIG)
+    except psycopg2.OperationalError as e:
+        print(f"Warning: Could not connect to database: {e}", file=sys.stderr)
+        print("The application will not work properly without a database connection.", file=sys.stderr)
+        # Create a mock connection object to allow import
+        conn = None
 
 
 def init_postgres_db():
+    """Initialize PostgreSQL database tables."""
+    if conn is None:
+        print("Warning: No database connection. Cannot initialize tables.", file=sys.stderr)
+        return
+        
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -91,4 +111,6 @@ def init_postgres_db():
         conn.commit()
 
 
-init_postgres_db()
+# Initialize database tables if connection is available
+if conn is not None:
+    init_postgres_db()
