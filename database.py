@@ -1,24 +1,49 @@
 import os
+import sys
+import logging
 
 import psycopg2
 from dotenv import load_dotenv
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 # Database configuration from environment variables
-DB_CONFIG = {
-    'dbname': os.getenv("DB_NAME", "postgres"),
-    'user': os.getenv("DB_USER", "postgres"),
-    'password': os.getenv("DB_PASSWORD", "9992"),
-    'host': os.getenv("DB_HOST", "localhost"),
-    'port': os.getenv("DB_PORT", "5432")
-}
+# Support both individual variables and DATABASE_URL (for Heroku, Railway, etc.)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Create connection
-conn = psycopg2.connect(**DB_CONFIG)
+if DATABASE_URL:
+    # If DATABASE_URL is provided, use it directly
+    conn = psycopg2.connect(DATABASE_URL)
+else:
+    # Otherwise, use individual configuration variables
+    DB_CONFIG = {
+        'dbname': os.getenv("DB_NAME", "postgres"),
+        'user': os.getenv("DB_USER", "postgres"),
+        'password': os.getenv("DB_PASSWORD", "9992"),
+        'host': os.getenv("DB_HOST", "localhost"),
+        'port': os.getenv("DB_PORT", "5432")
+    }
+    
+    try:
+        # Create connection
+        conn = psycopg2.connect(**DB_CONFIG)
+    except psycopg2.OperationalError as e:
+        logger.error(f"Could not connect to database: {e}")
+        logger.warning("The application will not work properly without a database connection.")
+        # Create a mock connection object to allow import
+        conn = None
 
 
 def init_postgres_db():
+    """Initialize PostgreSQL database tables."""
+    if conn is None:
+        logger.warning("No database connection. Cannot initialize tables.")
+        return
+        
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -91,4 +116,6 @@ def init_postgres_db():
         conn.commit()
 
 
-init_postgres_db()
+# Initialize database tables if connection is available
+if conn is not None:
+    init_postgres_db()
