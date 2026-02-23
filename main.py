@@ -155,6 +155,7 @@ def login():
                 (email,)
             )
             user = cursor.fetchone()
+            conn.commit()
 
             if not user:
                 flash("That email does not exist, please register first", "danger")
