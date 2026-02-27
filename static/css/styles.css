@@ -568,14 +568,14 @@ a:hover { color: var(--bs-link-hover-color); }
 /* Mobile menu fixes */
 @media (max-width: 991.98px) {
   #mainNav .navbar-collapse {
-    background-color: #fff;
-    border-top: 1px solid #dee2e6;
+    background-color: rgba(0, 0, 0, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin-top: 0.5rem;
     padding: 1rem;
   }
 
   #mainNav .navbar-nav > li.nav-item > a.nav-link {
-    color: #212529 !important;
+    color: #fff !important;
     padding: 0.5rem 0;
   }
 
