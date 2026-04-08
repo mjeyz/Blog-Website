@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: blog-website
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app
+    envVars:
+      - key: YOUR_SECRET_KEY
+        generateValue: true
+      - key: DB_NAME
+        fromDatabase:
+          name: blog-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: blog-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: blog-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: blog-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: blog-db
+          property: port
+      - key: Your_SMTP_EMAIL
+        sync: false
+      - key: Your_SMTP_PASSWORD
+        sync: false
+
+databases:
+  - name: blog-db
+    databaseName: blog_website
+    user: blog_user
